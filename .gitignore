@@ -1,0 +1,94 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+.eggs/
+lib/
+lib64/
+parts/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+pip-wheel-metadata/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# PyInstaller
+*.spec
+
+# Unit test / coverage reports
+.coverage
+.coverage.*
+.cache/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.pytest_cache/
+htmlcov/
+
+# MyPy / type checking
+.mypy_cache/
+.dmypy.json
+
+# Logs and debug
+*.log
+logs/
+
+# SQLite / DB
+*.sqlite3
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Django/Flask stuff
+*.pot
+
+# Local config
+*.env
+*.local
+
+# VSCode settings
+.vscode/
+*.code-workspace
+
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+
+# Thumbnails
+._*
+
+# Trash
+.Trashes
+
+# Other IDE/editor
+.idea/
+*.iml
+
+# Node (if any future frontend)
+node_modules/
+
+# Coverage reports alt
+coverage/
+
+# Backup files
+*~
+*.swp
+
+# GitHub Copilot chat data (if any)
+.github/copilot-*.json
