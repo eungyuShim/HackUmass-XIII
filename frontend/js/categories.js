@@ -27,168 +27,205 @@
     return node;
   }
 
+  // Render category name (editable or display mode)
+  function renderCategoryName(cat){
+    if(cat._editingName){
+      const nameInput = el('input',{
+        type:'text', 
+        id:`cat-name-${cat.id}`, 
+        value:cat.name||'', 
+        class:'category-name-input',
+        placeholder:'Category name'
+      });
+      setTimeout(() => { nameInput.focus(); nameInput.select(); }, 0);
+      return nameInput;
+    } else {
+      return el('span',{
+        class:'category-name',
+        'data-action':'dblclick-name',
+        'data-id':String(cat.id)
+      },[document.createTextNode(cat.name)]);
+    }
+  }
+
+  // Render category weight (editable or display mode)
+  function renderCategoryWeight(cat){
+    if(cat._editingWeight){
+      const weightInput = el('input',{
+        type:'text',
+        id:`cat-weight-${cat.id}`,
+        value:String(cat.weight??0),
+        class:'category-weight-input',
+        placeholder:'0'
+      });
+      setTimeout(() => { weightInput.focus(); weightInput.select(); }, 0);
+      return el('div',{class:'category-weight category-weight-editing'},[
+        document.createTextNode('Weight: '),
+        weightInput,
+        document.createTextNode('%')
+      ]);
+    } else {
+      return el('div',{
+        class:'category-weight',
+        'data-action':'dblclick-weight',
+        'data-id':String(cat.id)
+      },[document.createTextNode(`Weight: ${cat.weight}%`)]);
+    }
+  }
+
+  // Render category header (name, weight, actions)
+  function renderCategoryHeader(cat){
+    const headerDiv = el('div',{class:'category-header'});
+    const infoDiv = el('div',{class:'category-info'});
+    
+    infoDiv.appendChild(renderCategoryName(cat));
+    
+    // Calculate and display current average
+    const graded = cat.items.filter(it=>it.score!==null);
+    const avg = graded.length ? graded.reduce((s,it)=>s+it.score,0)/graded.length : 0;
+    const avgText = graded.length > 0 ? `Current Average: ${avg.toFixed(1)}%` : 'No grades yet';
+    const avgDiv = el('div',{class:'category-average'},[document.createTextNode(avgText)]);
+    infoDiv.appendChild(avgDiv);
+    
+    headerDiv.appendChild(infoDiv);
+    
+    // Actions (Weight, Items button and Delete button)
+    const actions = el('div',{class:'category-actions'});
+    actions.appendChild(renderCategoryWeight(cat));
+    actions.appendChild(el('button',{
+      class:'btn btn-small btn--ghost',
+      'data-action':'toggle-items',
+      'data-id':String(cat.id)
+    },[document.createTextNode(`Items (${cat.items.length})`)]));
+    actions.appendChild(el('button',{
+      class:'btn btn-small btn--danger',
+      'data-action':'delete-category',
+      'data-id':String(cat.id)
+    },[document.createTextNode('Delete')]));
+    
+    headerDiv.appendChild(actions);
+    return headerDiv;
+  }
+
+  // Render item name (editable or display mode)
+  function renderItemName(item, catId, idx){
+    if(item._editingName){
+      const nameInput = el('input',{
+        type:'text',
+        class:'item-name-input',
+        value:item.name||'',
+        placeholder:'Item name',
+        'data-cat':String(catId),
+        'data-idx':String(idx)
+      });
+      setTimeout(() => { nameInput.focus(); nameInput.select(); }, 0);
+      return nameInput;
+    } else {
+      return el('div',{
+        class:'item-name',
+        'data-action':'dblclick-item-name',
+        'data-cat':String(catId),
+        'data-idx':String(idx)
+      },[document.createTextNode(item.name)]);
+    }
+  }
+
+  // Render item score (editable or display mode)
+  function renderItemScore(item, catId, idx){
+    if(item._editingScore){
+      const scoreInput = el('input',{
+        type:'text',
+        class:'item-score-input',
+        value:(item.score!=null?String(item.score):''),
+        placeholder:'Score',
+        'data-cat':String(catId),
+        'data-idx':String(idx)
+      });
+      setTimeout(() => { scoreInput.focus(); scoreInput.select(); }, 0);
+      return el('div',{class:'item-score-edit'},[
+        scoreInput,
+        document.createTextNode('%')
+      ]);
+    } else {
+      return el('div',{
+        class:'item-score',
+        'data-action':'dblclick-item-score',
+        'data-cat':String(catId),
+        'data-idx':String(idx)
+      },[document.createTextNode(item.score!==null?`${item.score}%`:'Not graded')]);
+    }
+  }
+
+  // Render single item card
+  function renderItemCard(item, catId, idx){
+    const itemCard = el('div',{class:'item-card', 'data-cat':String(catId), 'data-idx':String(idx)});
+    
+    itemCard.appendChild(renderItemName(item, catId, idx));
+    itemCard.appendChild(renderItemScore(item, catId, idx));
+    
+    // Delete button
+    const deleteBtn = el('button',{
+      class:'btn btn-small btn--danger item-delete-btn',
+      'data-action':'delete-item',
+      'data-cat':String(catId),
+      'data-idx':String(idx)
+    },[document.createTextNode('Delete')]);
+    itemCard.appendChild(deleteBtn);
+    
+    return itemCard;
+  }
+
+  // Render items container for a category
+  function renderItemsContainer(cat){
+    if(!cat._open) return null;
+    
+    const itemsContainer = el('div',{id:`items-${cat.id}`, class:'items-container'});
+    
+    // Add Item button at the top
+    const addBtnWrapper = el('div',{class:'item-add-wrapper'},[
+      el('button',{
+        class:'btn btn-small btn--primary',
+        'data-action':'add-item',
+        'data-cat':String(cat.id)
+      },[document.createTextNode('+ Add Item')])
+    ]);
+    itemsContainer.appendChild(addBtnWrapper);
+    
+    // Render all items
+    cat.items.forEach((item, idx) => {
+      itemsContainer.appendChild(renderItemCard(item, cat.id, idx));
+    });
+    
+    return itemsContainer;
+  }
+
+  // Render single category card
+  function renderCategoryCard(cat){
+    const catDiv = el('div',{class:'category-card', 'data-id':String(cat.id)});
+    
+    catDiv.appendChild(renderCategoryHeader(cat));
+    
+    const itemsContainer = renderItemsContainer(cat);
+    if(itemsContainer) {
+      catDiv.appendChild(itemsContainer);
+    }
+    
+    return catDiv;
+  }
+
+  // Main render function
   function renderCategories(){
     const container = document.getElementById('categoriesList');
     if(!container) return;
+    
     container.innerHTML='';
-    categories.forEach(cat=>{
-      const catDiv = el('div',{class:'category-card', 'data-id':String(cat.id)});
-      
-      // Category header with name and weight
-      const headerDiv = el('div',{class:'category-header'});
-      const infoDiv = el('div',{class:'category-info'});
-      
-      // Category name (double-click to edit)
-      if(cat._editingName){
-        const nameInput = el('input',{
-          type:'text', 
-          id:`cat-name-${cat.id}`, 
-          value:cat.name||'', 
-          class:'category-name-input',
-          placeholder:'Category name'
-        });
-        infoDiv.appendChild(nameInput);
-        nameInput.focus();
-        nameInput.select();
-      } else {
-        const nameSpan = el('span',{
-          class:'category-name',
-          'data-action':'dblclick-name',
-          'data-id':String(cat.id)
-        },[document.createTextNode(cat.name)]);
-        infoDiv.appendChild(nameSpan);
-      }
-      
-      // Category weight (double-click to edit)
-      if(cat._editingWeight){
-        const weightInput = el('input',{
-          type:'text',
-          id:`cat-weight-${cat.id}`,
-          value:String(cat.weight??0),
-          class:'category-weight-input',
-          placeholder:'Weight'
-        });
-        const weightWrapper = el('span',{class:'category-weight-edit'},[
-          document.createTextNode('Weight: '),
-          weightInput,
-          document.createTextNode('%')
-        ]);
-        infoDiv.appendChild(weightWrapper);
-        weightInput.focus();
-        weightInput.select();
-      } else {
-        const weightSpan = el('span',{
-          class:'category-weight',
-          'data-action':'dblclick-weight',
-          'data-id':String(cat.id)
-        },[document.createTextNode(`Weight: ${cat.weight}%`)]);
-        infoDiv.appendChild(weightSpan);
-      }
-      
-      headerDiv.appendChild(infoDiv);
-      
-      // Actions (Items button and Delete button)
-      const actions = el('div',{class:'category-actions'});
-      actions.appendChild(el('button',{
-        class:'btn btn-small btn--ghost',
-        'data-action':'toggle-items',
-        'data-id':String(cat.id)
-      },[document.createTextNode(`Items (${cat.items.length})`)]));
-      actions.appendChild(el('button',{
-        class:'btn btn-small btn--danger',
-        'data-action':'delete-category',
-        'data-id':String(cat.id)
-      },[document.createTextNode('Delete')]));
-      
-      headerDiv.appendChild(actions);
-      catDiv.appendChild(headerDiv);
-      
-      // Items section (shown when toggled)
-      if(cat._open){
-        const itemsContainer = el('div',{id:`items-${cat.id}`, class:'items-container'});
-        
-        cat.items.forEach((item,idx)=>{
-          const itemCard = el('div',{class:'item-card', 'data-cat':String(cat.id), 'data-idx':String(idx)});
-          
-          // Item name (double-click to edit)
-          if(item._editingName){
-            const nameInput = el('input',{
-              type:'text',
-              class:'item-name-input',
-              value:item.name||'',
-              placeholder:'Item name',
-              'data-cat':String(cat.id),
-              'data-idx':String(idx)
-            });
-            itemCard.appendChild(nameInput);
-            nameInput.focus();
-            nameInput.select();
-          } else {
-            const nameDiv = el('div',{
-              class:'item-name',
-              'data-action':'dblclick-item-name',
-              'data-cat':String(cat.id),
-              'data-idx':String(idx)
-            },[document.createTextNode(item.name)]);
-            itemCard.appendChild(nameDiv);
-          }
-          
-          // Item score (double-click to edit)
-          if(item._editingScore){
-            const scoreInput = el('input',{
-              type:'text',
-              class:'item-score-input',
-              value:(item.score!=null?String(item.score):''),
-              placeholder:'Score',
-              'data-cat':String(cat.id),
-              'data-idx':String(idx)
-            });
-            const scoreWrapper = el('div',{class:'item-score-edit'},[
-              scoreInput,
-              document.createTextNode('%')
-            ]);
-            itemCard.appendChild(scoreWrapper);
-            scoreInput.focus();
-            scoreInput.select();
-          } else {
-            const scoreDiv = el('div',{
-              class:'item-score',
-              'data-action':'dblclick-item-score',
-              'data-cat':String(cat.id),
-              'data-idx':String(idx)
-            },[document.createTextNode(item.score!==null?`${item.score}%`:'Not graded')]);
-            itemCard.appendChild(scoreDiv);
-          }
-          
-          // Delete button
-          const deleteBtn = el('button',{
-            class:'btn btn-small btn--danger item-delete-btn',
-            'data-action':'delete-item',
-            'data-cat':String(cat.id),
-            'data-idx':String(idx)
-          },[document.createTextNode('Delete')]);
-          itemCard.appendChild(deleteBtn);
-          
-          itemsContainer.appendChild(itemCard);
-        });
-        
-        // Add Item button
-        const addBtnWrapper = el('div',{class:'item-add-wrapper'},[
-          el('button',{
-            class:'btn btn-small btn--primary',
-            'data-action':'add-item',
-            'data-cat':String(cat.id)
-          },[document.createTextNode('+ Add Item')])
-        ]);
-        itemsContainer.appendChild(addBtnWrapper);
-        
-        catDiv.appendChild(itemsContainer);
-      }
-      
-      container.appendChild(catDiv);
+    categories.forEach(cat => {
+      container.appendChild(renderCategoryCard(cat));
     });
+    
     updateTotalWeight();
     renderSummary();
+    
     // Update progress bar after rendering categories
     if(window.GPProgress && typeof GPProgress.updateProgressFromCategories==='function'){
       GPProgress.updateProgressFromCategories();

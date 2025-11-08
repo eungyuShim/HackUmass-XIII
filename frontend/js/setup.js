@@ -13,7 +13,91 @@
   function skipToAnalysis(){ document.getElementById('uploadStatus').textContent=''; proceedToAnalysis(); }
   function proceedToAnalysis(){ document.getElementById('step1').style.display='none'; document.getElementById('step2').style.display='block'; renderSetupCategories(); }
   function backToUpload(){ document.getElementById('step1').style.display='block'; document.getElementById('step2').style.display='none'; }
-  function renderSetupCategories(){ const container=document.getElementById('setupCategoriesList'); if(!container) return; container.innerHTML=''; setupCategories.forEach(cat=>{ const wrapper=document.createElement('div'); wrapper.style.cssText='background:var(--bg-gray);border:1px solid var(--border-light);border-radius:8px;padding:16px;display:flex;justify-content:space-between;align-items:center'; wrapper.innerHTML=`<div style="flex:1"><input type="text" value="${cat.name}" data-setup-id="${cat.id}" data-field="name" class="setup-input-name" style="border:none;background:transparent;font-weight:600;font-size:15px;color:var(--txt);width:200px" placeholder="Category name"><div style="font-size:13px;color:var(--txt-muted);margin-top:4px"><input type="number" value="${cat.weight}" min="0" max="100" data-setup-id="${cat.id}" data-field="weight" class="setup-input-weight" style="width:60px;border:1px solid var(--border);border-radius:4px;padding:4px;font-size:13px">% | <input type="number" value="${cat.count}" min="1" data-setup-id="${cat.id}" data-field="count" class="setup-input-count" style="width:50px;border:1px solid var(--border);border-radius:4px;padding:4px;font-size:13px"> items</div></div><button class="btn btn-small btn--danger" data-setup-id="${cat.id}" data-action="delete-setup-cat">Delete</button>`; container.appendChild(wrapper); }); updateSetupTotalWeight(); }
+  
+  function el(tag, attrs = {}, children = []){
+    const node = document.createElement(tag);
+    Object.entries(attrs).forEach(([k,v])=>{
+      if(k==='class') node.className=v; else node.setAttribute(k,v);
+    });
+    children.forEach(ch=>node.appendChild(typeof ch==='string'?document.createTextNode(ch):ch));
+    return node;
+  }
+  
+  function renderSetupCategories(){ 
+    const container=document.getElementById('setupCategoriesList'); 
+    if(!container) return; 
+    container.innerHTML=''; 
+    
+    setupCategories.forEach(cat=>{
+      // Category card
+      const catCard = el('div', {class: 'setup-category-card'});
+      
+      // Header
+      const header = el('div', {class: 'setup-category-header'});
+      const info = el('div', {class: 'setup-category-info'});
+      
+      // Name input
+      const nameInput = el('input', {
+        type: 'text',
+        value: cat.name,
+        'data-setup-id': String(cat.id),
+        'data-field': 'name',
+        class: 'setup-input-name',
+        placeholder: 'Category name'
+      });
+      info.appendChild(nameInput);
+      
+      // Count info
+      const countInfo = el('div', {class: 'setup-category-count'}, [
+        document.createTextNode('Items: '),
+        el('input', {
+          type: 'number',
+          value: String(cat.count),
+          min: '1',
+          'data-setup-id': String(cat.id),
+          'data-field': 'count',
+          class: 'setup-input-count'
+        })
+      ]);
+      info.appendChild(countInfo);
+      
+      header.appendChild(info);
+      
+      // Actions (Weight and Delete)
+      const actions = el('div', {class: 'setup-category-actions'});
+      
+      // Weight badge
+      const weightBadge = el('div', {class: 'setup-weight-badge'}, [
+        document.createTextNode('Weight: '),
+        el('input', {
+          type: 'number',
+          value: String(cat.weight),
+          min: '0',
+          max: '100',
+          'data-setup-id': String(cat.id),
+          'data-field': 'weight',
+          class: 'setup-input-weight'
+        }),
+        document.createTextNode('%')
+      ]);
+      actions.appendChild(weightBadge);
+      
+      // Delete button
+      const deleteBtn = el('button', {
+        class: 'btn btn-small btn--danger',
+        'data-setup-id': String(cat.id),
+        'data-action': 'delete-setup-cat'
+      }, [document.createTextNode('Delete')]);
+      actions.appendChild(deleteBtn);
+      
+      header.appendChild(actions);
+      catCard.appendChild(header);
+      container.appendChild(catCard);
+    });
+    
+    updateSetupTotalWeight(); 
+  }
+  
   function updateSetupTotalWeight(){ const total=setupCategories.reduce((s,c)=>s+c.weight,0); const totalEl=document.getElementById('setupTotalWeight'); if(totalEl) totalEl.textContent=total; const warn=document.getElementById('setupWeightWarning'); if(warn) warn.style.display= total!==100?'inline':'none'; }
   function addSetupCategory(){ setupCategories.push({id: nextSetupCategoryId++, name:'New Category', weight:0, count:1}); renderSetupCategories(); }
   function confirmSetup(){ const total=setupCategories.reduce((s,c)=>s+c.weight,0); if(total!==100){ alert('Grade weights must total 100%'); return; } sessionStorage.setItem('course_setup', JSON.stringify(setupCategories)); closeSetupModal(); alert('Settings applied successfully!'); loadCategoriesFromSetup(); }
