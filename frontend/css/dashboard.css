@@ -9,13 +9,14 @@
   flex: 1;
   background: var(--bg-left);
   overflow-y: auto;
+  overflow-x: hidden;
   /* Add margin-left for fixed sidebar */
   margin-left: 260px;
 }
 
 .header {
   background: var(--white);
-  padding: 24px 40px;
+  padding: 20px 32px;
   border-bottom: 1px solid var(--border);
   box-shadow: var(--shadow-sm);
   display: flex;
@@ -33,7 +34,7 @@
 .wrap {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 32px 40px 64px;
+  padding: 28px 32px 48px;
 }
 
 /* Syllabus upload modal overlay */
@@ -53,7 +54,7 @@
 .modal-content {
   background: var(--white);
   border-radius: 16px;
-  padding: 32px;
+  padding: 36px;
   max-width: 500px;
   width: 90%;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
@@ -64,13 +65,14 @@
   background: var(--white);
   border: 1px solid var(--border-light);
   border-radius: 12px;
-  padding: 24px;
+  padding: 28px;
   margin: 16px 0;
   box-shadow: var(--shadow-sm);
+  overflow-x: hidden;
 }
 
 .card h3 {
-  margin: 0 0 16px;
+  margin: 0 0 20px;
   font-size: 18px;
   font-weight: 600;
   color: var(--txt);
@@ -83,40 +85,92 @@
   margin: 16px 0;
 }
 
-.category-item {
-  background: var(--bg-gray);
+/* Category Cards */
+.category-card {
+  background: var(--white);
   border: 1px solid var(--border-light);
-  border-radius: 8px;
-  padding: 16px;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 12px 0;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s;
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+.category-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--accent-light);
+}
+
+.category-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: all 0.2s;
-}
-
-.category-item:hover {
-  box-shadow: var(--shadow-sm);
-}
-
-.category-item.locked {
-  background: #fef3f2;
-  border-color: var(--success);
+  gap: 16px;
 }
 
 .category-info {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .category-name {
   font-weight: 600;
-  font-size: 15px;
-  margin-bottom: 4px;
+  font-size: 16px;
   color: var(--txt);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.2s;
+  display: inline-block;
+  width: fit-content;
+}
+
+.category-name:hover {
+  background: var(--bg-gray);
 }
 
 .category-weight {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--txt-muted);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.2s;
+  display: inline-block;
+  width: fit-content;
+}
+
+.category-weight:hover {
+  background: var(--bg-gray);
+}
+
+.category-name-input,
+.category-weight-input {
+  border: 2px solid var(--accent);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 16px;
+  font-weight: 600;
+  background: var(--white);
+  outline: none;
+  font-family: inherit;
+}
+
+.category-weight-input {
+  font-size: 14px;
+  font-weight: 400;
+  width: 60px;
+  text-align: center;
+}
+
+.category-weight-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .category-actions {
@@ -125,73 +179,109 @@
   align-items: center;
 }
 
-/* 세부 항목 관리 */
-.item-list {
-  margin: 12px 0;
-  border-left: 3px solid var(--accent);
-  padding-left: 16px;
+/* Items Container */
+.items-container {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 2px solid var(--border-light);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.item {
+.item-add-wrapper {
+  margin-top: 8px;
+}
+
+/* Item Cards */
+.item-card {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 12px;
-  margin: 8px 0;
-  background: var(--white);
+  gap: 12px;
+  padding: 16px;
+  background: var(--bg-gray);
   border: 1px solid var(--border-light);
-  border-radius: 6px;
+  border-radius: 8px;
   transition: all 0.2s;
 }
 
-.item:hover {
+.item-card:hover {
   box-shadow: var(--shadow-sm);
-}
-
-.item.locked {
-  background: var(--bg-gray);
+  background: var(--white);
 }
 
 .item-name {
+  flex: 1;
   font-size: 14px;
   font-weight: 500;
   color: var(--txt);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.item-name:hover {
+  background: #f3e5e5;
 }
 
 .item-score {
   font-size: 14px;
   color: var(--txt-muted);
-}
-
-.item-score.locked {
-  color: var(--success);
-  font-weight: 600;
-}
-
-.badge {
-  font-size: 11px;
+  min-width: 100px;
+  text-align: right;
+  cursor: pointer;
   padding: 4px 8px;
   border-radius: 4px;
-  font-weight: 600;
-  text-transform: uppercase;
-  margin-left: 8px;
+  transition: background 0.2s;
 }
 
-.badge-locked {
-  background: var(--success);
-  color: var(--white);
+.item-score:hover {
+  background: #f3e5e5;
 }
 
-.badge-editable {
-  background: var(--info);
-  color: var(--white);
+.item-name-input,
+.item-score-input {
+  border: 2px solid var(--accent);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 14px;
+  background: var(--white);
+  outline: none;
+  font-family: inherit;
+  flex: 1;
+}
+
+.item-score-input {
+  width: 80px;
+  text-align: right;
+  flex: none;
+}
+
+.item-score-edit {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 100px;
+}
+
+.item-delete-btn {
+  margin-left: auto;
+}
+
+/* Smaller input variant used across forms */
+.input--sm { height: 34px; font-size: 13px; padding: 0 10px; }
+
+/* Prevent shimmer from causing horizontal overflow */
+.progress-bar-bg {
+  overflow: hidden;
 }
 
 /* 버튼 스타일 개선 */
 .btn {
   border: 0;
   border-radius: 8px;
-  padding: 10px 20px;
+  padding: 11px 22px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -211,16 +301,6 @@
   background: var(--accent-hover);
   transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
-}
-
-.btn--secondary {
-  background: var(--info);
-  color: var(--white);
-}
-
-.btn--secondary:hover {
-  background: #2563eb;
-  transform: translateY(-1px);
 }
 
 .btn--ghost {
@@ -246,7 +326,7 @@
 }
 
 .btn-small {
-  padding: 6px 12px;
+  padding: 7px 14px;
   font-size: 12px;
 }
 
@@ -256,7 +336,7 @@
   color: var(--white);
   border: 0;
   border-radius: 8px;
-  padding: 12px 24px;
+  padding: 13px 26px;
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
@@ -309,7 +389,7 @@
 .upload-area {
   border: 2px dashed var(--border);
   border-radius: 12px;
-  padding: 48px 24px;
+  padding: 40px 28px;
   text-align: center;
   background: var(--bg-gray);
   cursor: pointer;
@@ -341,15 +421,9 @@
   color: var(--txt-muted);
 }
 
-/* Clean progress bar design */
-.progress-container {
-  margin: 24px 0;
-}
-
 .progress-label {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 12px;
 }
 
 .progress-label-text {
@@ -362,6 +436,12 @@
   font-weight: 700;
   font-size: 16px;
   color: var(--accent);
+}
+
+/* Added wrapper for positioning pin marker */
+.progress-bar-wrapper {
+  position: relative;
+  width: 100%;
 }
 
 .progress-bar-bg {
@@ -389,6 +469,75 @@
   bottom: 0;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
   animation: shimmer 2s infinite;
+}
+
+/* Added target grade pin marker styles */
+.progress-pin {
+  position: absolute;
+  top: -46px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  transition: left 0.3s ease;
+  z-index: 10;
+}
+
+.progress-pin-label {
+  background: var(--accent);
+  color: var(--white);
+  font-weight: 700;
+  font-size: 13px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(136, 28, 28, 0.3);
+}
+
+.progress-pin-icon {
+  width: 24px;
+  height: 24px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+/* Added grade preset button styles */
+.grade-options {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.grade-btn {
+  background: var(--white);
+  border: 2px solid var(--border);
+  color: var(--txt);
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.grade-btn:hover {
+  background: var(--accent);
+  color: var(--white);
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.grade-btn.active {
+  background: var(--accent);
+  color: var(--white);
+  border-color: var(--accent);
+}
+
+.grade-select-hint {
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 @keyframes shimmer {
@@ -444,11 +593,11 @@
   background: var(--bg-card);
   border: 1px solid var(--border-light);
   border-radius: 12px;
-  padding: 20px;
+  padding: 24px;
 }
 
 .analysis-card h4 {
-  margin: 0 0 16px;
+  margin: 0 0 18px;
   font-size: 16px;
   font-weight: 600;
   color: var(--txt);
@@ -456,7 +605,7 @@
 
 .analysis-label {
   display: block;
-  margin: 12px 0;
+  margin: 14px 0;
   font-size: 14px;
   color: var(--txt);
   font-weight: 500;
@@ -465,6 +614,18 @@
 .analysis-label input {
   width: 100%;
   margin-top: 6px;
+}
+
+/* Added styles for editable setup categories */
+.setup-category-item input[type="text"],
+.setup-category-item input[type="number"] {
+  transition: border-color 0.2s;
+}
+
+.setup-category-item input[type="text"]:focus,
+.setup-category-item input[type="number"]:focus {
+  outline: none;
+  border-color: var(--accent) !important;
 }
 
 /* 반응형 - 900px 이하에서 사이드바 숨김 */
@@ -479,11 +640,11 @@
   }
 
   .wrap {
-    padding: 24px 20px;
+    padding: 20px 16px;
   }
 
   .header {
-    padding: 20px;
+    padding: 16px 20px;
     flex-direction: column;
     align-items: flex-start;
     gap: 16px;
