@@ -1,0 +1,14 @@
+/* syllabus.css — upload syllabus page */
+body { background: var(--bg-left); }
+.wrap { max-width:900px; margin:6vh auto; padding:48px 32px; background:var(--white); border:1px solid var(--border-light); border-radius:16px; box-shadow:var(--shadow-sm); }
+.wrap h2 { margin:0 0 16px; font-size:28px; }
+p { margin:0 0 24px; color:var(--txt-muted); line-height:1.5; }
+.row { display:flex; gap:12px; flex-wrap:wrap; margin:16px 0; }
+.input { height:46px; border:2px solid var(--border); border-radius:10px; padding:0 14px; font-size:15px; }
+.input:focus { outline:0; border-color:var(--input-placeholder); }
+.btn { border:0; border-radius:8px; padding:12px 22px; font-size:15px; font-weight:600; cursor:pointer; }
+.btn--primary { background:var(--accent); color:var(--white); }
+.btn--primary:hover { background:#7f0e18; }
+.btn--ghost { background:transparent; color:var(--txt-muted); border:1px solid var(--border); }
+.btn--ghost:hover { background:var(--bg-gray); }
+#msg { margin-top:12px; font-size:14px; color:var(--txt-muted); }

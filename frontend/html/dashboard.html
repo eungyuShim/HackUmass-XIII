@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<title>Grade Planner — Dashboard</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="stylesheet" href="../css/global.css"/>
+  <link rel="stylesheet" href="../css/dashboard.css"/>
+</head>
+<body>
+<header class="header">
+  <div>
+    <div style="font-size:13px;color:#6b7280;margin-bottom:4px">Current Course</div>
+    <h2 id="course" style="margin:0">Course Name</h2>
+  </div>
+  <div class="row">
+    <label style="font-weight:600;white-space:nowrap">Target Grade</label>
+    <input id="goal" class="input" type="text" placeholder="A-, B+, 90" style="width:120px">
+    <button id="calc" class="btn btn--primary">Calculate</button>
+  </div>
+</header>
+
+<div class="container">
+  <div class="card">
+    <h3>Grade Range Projection</h3>
+    <div style="margin:24px 0">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+        <span style="font-weight:600">Maximum Possible</span>
+        <span id="maxVal" style="font-weight:700;color:#3b82f6">0%</span>
+      </div>
+      <div class="progress">
+        <div id="maxFill" class="progress__fill progress__fill--alt" style="width:0%"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Adjust Remaining Weights</h3>
+      <p style="color:#6b7280;margin-bottom:24px;line-height:1.6">
+        Fine-tune the weight distribution for remaining assignments and assessments.
+      </p>
+      <label style="display:block;margin:16px 0;font-weight:600">
+        Assignments <span style="float:right;font-weight:400" id="wHwVal">25%</span>
+        <input id="wHw" class="slider" type="range" min="0" max="100" value="25" style="margin-top:8px"/>
+      </label>
+      <label style="display:block;margin:16px 0;font-weight:600">
+        Quizzes <span style="float:right;font-weight:400" id="wQzVal">25%</span>
+        <input id="wQz" class="slider" type="range" min="0" max="100" value="25" style="margin-top:8px"/>
+      </label>
+      <label style="display:block;margin:16px 0;font-weight:600">
+        Exams <span style="float:right;font-weight:400" id="wExVal">50%</span>
+        <input id="wEx" class="slider" type="range" min="0" max="100" value="50" style="margin-top:8px"/>
+      </label>
+      <div style="color:#6b7280;margin-top:16px;font-size:14px;padding:12px;background:#f9fafb;border-radius:8px" id="wShow"></div>
+    </div>
+
+    <div class="card">
+      <h3>Required Scores (Strategy 1)</h3>
+      <ul id="needs" style="margin:0;padding-left:20px;line-height:2;color:#374151">
+        <li>Enter target grade to calculate...</li>
+      </ul>
+      <p style="color:#6b7280;font-size:13px;margin:24px 0 0;line-height:1.6;padding-top:16px;border-top:1px solid #e5e7eb">
+        <b>Assumptions:</b> Exam scores are fixed at current/expected values. Assignment weights may fluctuate based on future additions. Attendance starts at 100% (adjustable).
+      </p>
+    </div>
+  </div>
+
+  <div class="card">
+    <details>
+      <summary>View Current Grade Summary</summary>
+      <div style="margin-top:24px">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>Current Average</th>
+              <th>Weight (%)</th>
+            </tr>
+          </thead>
+          <tbody id="sumBody"></tbody>
+        </table>
+      </div>
+    </details>
+  </div>
+</div>
+
+<script>
+  const courseName=sessionStorage.getItem('current_course_name')||'Selected Course';
+  document.getElementById('course').textContent=courseName;
+
+  const ext = JSON.parse(sessionStorage.getItem('syll_extract')||'{"weights":{"ex":50,"qz":25,"hw":25},"dropQ":1,"examPolicy":"4/5","midterms":2,"finals":1,"counts":{"assignments":6,"quizzes":8},"extra":"no"}');
+  const w={ex:ext.weights.ex, qz:ext.weights.qz, hw:ext.weights.hw};
+
+  const current = {
+    examsAvg: 82,
+    quizzesAvg: 91,
+    hwAvg: 88,
+    attendance: 100,
+    earnedPct: 38.5,
+    remainingWeight: 0.61
+  };
+
+  const minPct = Math.max(0, Math.min(100, current.earnedPct));
+  const maxPct = Math.max(minPct, Math.min(100, minPct + current.remainingWeight*100));
+  document.getElementById('minFill').style.width=minPct+'%';
+  document.getElementById('maxFill').style.width=maxPct+'%';
+  document.getElementById('minVal').textContent=minPct.toFixed(1)+'%';
+  document.getElementById('maxVal').textContent=maxPct.toFixed(1)+'%';
+
+  const wHw=document.getElementById('wHw'), wQz=document.getElementById('wQz'), wEx=document.getElementById('wEx');
+  wHw.value=w.hw; wQz.value=w.qz; wEx.value=w.ex;
+  
+  function showW(){
+    document.getElementById('wHwVal').textContent=wHw.value+'%';
+    document.getElementById('wQzVal').textContent=wQz.value+'%';
+    document.getElementById('wExVal').textContent=wEx.value+'%';
+    const total = (+wHw.value)+(+wQz.value)+(+wEx.value);
+    document.getElementById('wShow').textContent=`Total: ${total}% ${total===100?'✓':'⚠ Must equal 100%'}`;
+  }
+  
+  [wHw,wQz,wEx].forEach(el=>el.addEventListener('input',showW));
+  showW();
+
+  function parseGoal(g){
+    const map={'A+':97,'A':93,'A-':90,'B+':87,'B':83,'B-':80,'C+':77,'C':73,'C-':70};
+    if(!g) return null;
+    const up=g.trim().toUpperCase();
+    if(map[up]!=null) return map[up];
+    const n=Number(up);
+    return isFinite(n)?n:null;
+  }
+
+  function computeNeeds(target){
+    const remW = current.remainingWeight;
+    if(remW<=0) return {neededAvg:Infinity, rows:[]};
+    const C = minPct;
+    const neededAvg = Math.max(0,(target-C)/remW);
+
+    const rows=[];
+    rows.push(`<b>Overall needed average:</b> ${neededAvg.toFixed(1)}% across remaining work`);
+    rows.push(`Exams: Fixed at current ${current.examsAvg}%`);
+    const adjQz = Math.min(100, Math.max(0, neededAvg + (90 - current.quizzesAvg)));
+    const adjHw = Math.min(100, Math.max(0, neededAvg + (90 - current.hwAvg)));
+    rows.push(`Quizzes: Average ~${adjQz.toFixed(1)}% on remaining quizzes`);
+    rows.push(`Assignments: Average ~${adjHw.toFixed(1)}% on remaining assignments`);
+    rows.push(`Attendance: ${current.attendance}% (adjustable)`);
+
+    return {neededAvg, rows};
+  }
+
+  const sumBody=document.getElementById('sumBody');
+  [
+    ['Exams',current.examsAvg, w.ex],
+    ['Quizzes',current.quizzesAvg, w.qz],
+    ['Assignments',current.hwAvg, w.hw],
+    ['Attendance',current.attendance, 0]
+  ].forEach(([k,avg,weight])=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${k}</td><td>${(+avg).toFixed(1)}%</td><td>${weight}%</td>`;
+    sumBody.appendChild(tr);
+  });
+
+  document.getElementById('calc').onclick=()=>{
+    const G=parseGoal(document.getElementById('goal').value);
+    if(G==null){
+      alert('Please enter a target grade (e.g., A-, B+, or 90)');
+      return;
+    }
+    const {neededAvg, rows}=computeNeeds(G);
+    document.getElementById('needs').innerHTML = rows.map(r=>`<li>${r}</li>`).join('');
+  };
+</script>
+</body>
+</html>
