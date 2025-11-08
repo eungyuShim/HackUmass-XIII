@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<title>Grade Planner</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<link rel="stylesheet" href="../css/global.css"/>
+<link rel="stylesheet" href="../css/index.css"/>
+</head>
+<body>
+<section class="hero">
+  <div class="panel">
+    <h1>GRADE<br>PLANNER</h1>
+    <div class="search">
+        <input
+            id="token"
+            class="input"
+            type="password"
+            placeholder="Enter your access token"
+        />
+
+        <button id="vis" class="icon-btn" type="button" title="Show/Hide token">
+            <img src="../icons/eye-alt.svg" alt="Toggle visibility" />
+        </button>
+
+        <button id="go" class="icon-btn" type="submit" title="Submit">
+            <img src="../icons/send-outline.svg" alt="Submit" />
+        </button>
+        </div>
+    <div class="hint">
+      <span id="how" class="link">Don't know how to get an access token?</span>
+    </div>
+    <div class="subhint">
+        Token will never be stored and will only be used for this session.
+    </div>
+  </div>
+  <div class="hero-gradient"></div>
+</section>
+
+<section id="modal" class="modal" aria-hidden="true" role="dialog">
+  <div class="card">
+    <h3>How to get an access token</h3>
+    <ol class="steps">
+      <li><span>Log in to Canvas and go to <b>Account → Settings</b></span></li>
+      <li><span>Click <b>+ New Access Token</b> and enter a purpose</span></li>
+      <li><span>Click <b>Generate Token</b> and copy the value</span></li>
+      <li><span>Paste it here and click the arrow to continue</span></li>
+    </ol>
+    <div style="text-align:right"><button id="close" class="btn btn--outline">Close</button></div>
+  </div>
+</section>
+
+<script>
+  const t=document.getElementById('token');
+  const how=document.getElementById('how');
+  if(how){ how.onclick=()=>{document.getElementById('modal').setAttribute('aria-hidden','false')}; }
+  document.getElementById('close').onclick=()=>{document.getElementById('modal').setAttribute('aria-hidden','true')};
+  const visBtn=document.getElementById('vis');
+  if (visBtn){
+    const visImg=visBtn.querySelector('img');
+    visBtn.addEventListener('click',()=>{
+      const hidden=t.type==='password';
+      t.type=hidden?'text':'password';
+      if(visImg){ visImg.src = hidden ? '../icons/eye-close.svg' : '../icons/eye-alt.svg'; }
+    });
+  }
+  function submit(){
+    const v=t.value.trim();
+    if(v) sessionStorage.setItem('canvas_token_present','1');
+    else sessionStorage.removeItem('canvas_token_present');
+    location.href='course.html';
+  }
+  document.getElementById('go').onclick=submit;
+  t.addEventListener('keydown',e=>{if(e.key==='Enter') submit();});
+</script>
+</body>
+</html>

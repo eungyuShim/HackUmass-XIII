@@ -1,0 +1,18 @@
+/* analyze.css — AI analysis / confirm weights */
+body { background: var(--bg-left); }
+.wrap { max-width:1000px; margin:6vh auto; padding:40px 32px; background:var(--white); border:1px solid var(--border-light); border-radius:16px; box-shadow:var(--shadow-sm); }
+h2 { margin:0 0 14px; font-size:28px; }
+p { margin:0 0 24px; color:var(--txt-muted); line-height:1.5; }
+.grid { display:grid; gap:20px; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); margin-bottom:16px; }
+.card { background:var(--bg-card); border:1px solid var(--border-light); border-radius:12px; padding:20px; }
+.card h3 { margin:0 0 12px; font-size:18px; }
+label { display:block; margin:8px 0; font-size:14px; }
+input,select { font:inherit; }
+input[type=number],input[type=text]{ height:38px; padding:0 8px; border:2px solid var(--border); border-radius:8px; }
+input:focus { outline:0; border-color:var(--input-placeholder); }
+.row { display:flex; gap:12px; flex-wrap:wrap; margin-top:12px; }
+.btn { border:0; border-radius:8px; padding:12px 22px; font-size:15px; font-weight:600; cursor:pointer; }
+.btn--primary { background:var(--accent); color:var(--white); }
+.btn--primary:hover { background:#7f0e18; }
+.btn--ghost { background:transparent; color:var(--txt-muted); border:1px solid var(--border); }
+.btn--ghost:hover { background:var(--bg-gray); }
