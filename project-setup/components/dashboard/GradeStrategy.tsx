@@ -112,23 +112,12 @@ export default function GradeStrategy() {
                       </div>
                     </div>
                     <button
-                      className="pin-btn"
+                      className={`pin-btn ${item.isPinned ? 'pin-btn--active' : ''}`}
                       type="button"
                       onClick={() => handlePinToggle(index)}
-                      style={{
-                        cursor: 'pointer',
-                        marginLeft: '8px',
-                        background: 'none',
-                        border: 'none',
-                        padding: '6px 8px',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        transition: 'opacity 0.2s',
-                        opacity: item.isPinned ? 1 : 0.5,
-                      }}
                     >
                       <Image
-                        src={item.isPinned ? '/icons/pin-fill.svg' : '/icons/pin.svg'}
+                        src="/icons/pin-fill.svg"
                         alt="pin"
                         width={20}
                         height={20}

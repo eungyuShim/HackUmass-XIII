@@ -6,6 +6,7 @@
   --accent: #881c1c;
   --accent-hover: #6b1616;
   --accent-light: #b32d2d;
+  --accent-bg: #fef2f2;
   --bg-left: #f9fafb;
   --bg-right: #881c1c;
   --bg-right-dark: #6b1616;
@@ -18,11 +19,14 @@
   --input-placeholder: #9ca3af;
   --success: #16a34a;
   --success-light: #22c55e;
+  --success-bg: #f0fdf4;
   --info: #3b82f6;
   --info-light: #60a5fa;
+  --warning: #f59e0b;
+  --danger: #dc2626;
   --hover-gray: #374151;
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.08);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
   --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
@@ -40,6 +44,8 @@ html {
   /* 고해상도 디스플레이를 위한 설정 */
   -webkit-text-size-adjust: 100%;
   -ms-text-size-adjust: 100%;
+  /* 스크롤바가 항상 공간을 차지하도록 설정 */
+  overflow-y: scroll;
 }
 
 body {

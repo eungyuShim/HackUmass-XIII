@@ -23,11 +23,11 @@ body {
 
 .header {
   background: var(--white);
-  padding: 24px 40px;
+  padding: 32px 40px;
   border-bottom: 1px solid var(--border);
   box-shadow: var(--shadow-sm);
   width: 100%;
-  margin: 0 0 32px 0;
+  margin: 0;
 }
 
 .header h2 {
@@ -52,12 +52,18 @@ body {
   margin-top: 8px;
 }
 
+/* Course grid wrapper */
+.grid-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 40px 48px;
+}
+
 /* Course grid */
 .grid {
   display: grid;
   gap: 24px;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  padding: 32px 40px 48px;
 }
 
 .card {
@@ -143,7 +149,9 @@ body {
   }
   .main-content {
     margin-left: 0;
-    padding: 24px 16px;
+  }
+  .grid-wrapper {
+    padding: 24px 16px 48px;
   }
   .grid {
     grid-template-columns: 1fr;
@@ -155,7 +163,7 @@ body {
     font-size: 28px;
   }
 
-  .main-content {
-    padding: 20px 16px;
+  .grid-wrapper {
+    padding: 20px 16px 48px;
   }
 }

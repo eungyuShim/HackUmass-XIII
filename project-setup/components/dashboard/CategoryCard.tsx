@@ -150,7 +150,6 @@ export default function CategoryCard({ category }: CategoryCardProps) {
           {/* Weight */}
           {category._editingWeight ? (
             <div className="category-weight category-weight-editing">
-              Weight:{' '}
               <input
                 ref={weightInputRef}
                 type="text"
@@ -159,13 +158,12 @@ export default function CategoryCard({ category }: CategoryCardProps) {
                 onKeyDown={handleWeightKeyDown}
                 onBlur={handleWeightBlur}
                 className="category-weight-input"
-                placeholder="0"
               />
               %
             </div>
           ) : (
             <div className="category-weight" onDoubleClick={handleWeightDoubleClick}>
-              Weight: {category.weight}%
+              {category.weight}%
             </div>
           )}
 

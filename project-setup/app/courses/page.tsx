@@ -67,39 +67,41 @@ export default function CoursesPage() {
           </div>
         </header>
 
-        <section className="grid" id="list">
-          {courses.length === 0 ? (
-            <div style={{ 
-              gridColumn: '1 / -1', 
-              textAlign: 'center', 
-              padding: '4rem 2rem',
-              color: 'var(--txt-muted)'
-            }}>
-              <p style={{ fontSize: '18px', marginBottom: '8px' }}>No courses found</p>
-              <p style={{ fontSize: '14px' }}>
-                {hasToken 
-                  ? 'No courses are available for this account.' 
-                  : 'Please enter your Canvas access token to view your courses.'}
-              </p>
-            </div>
-          ) : (
-            courses.map((course) => (
-              <div key={course.id} className="card">
-                <h3>{course.name}</h3>
-                <div className="card-term">{course.term}</div>
-                <div className="card-pill">Course ID: {course.id}</div>
-                <div className="row">
-                  <button
-                    className="btn btn--primary"
-                    onClick={() => handleViewCourse(course)}
-                  >
-                    View Course
-                  </button>
-                </div>
+        <div className="grid-wrapper">
+          <section className="grid" id="list">
+            {courses.length === 0 ? (
+              <div style={{ 
+                gridColumn: '1 / -1', 
+                textAlign: 'center', 
+                padding: '4rem 2rem',
+                color: 'var(--txt-muted)'
+              }}>
+                <p style={{ fontSize: '18px', marginBottom: '8px' }}>No courses found</p>
+                <p style={{ fontSize: '14px' }}>
+                  {hasToken 
+                    ? 'No courses are available for this account.' 
+                    : 'Please enter your Canvas access token to view your courses.'}
+                </p>
               </div>
-            ))
-          )}
-        </section>
+            ) : (
+              courses.map((course) => (
+                <div key={course.id} className="card">
+                  <h3>{course.name}</h3>
+                  <div className="card-term">{course.term}</div>
+                  <div className="card-pill">Course ID: {course.id}</div>
+                  <div className="row">
+                    <button
+                      className="btn btn--primary"
+                      onClick={() => handleViewCourse(course)}
+                    >
+                      View Course
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </section>
+        </div>
       </main>
     </div>
   );

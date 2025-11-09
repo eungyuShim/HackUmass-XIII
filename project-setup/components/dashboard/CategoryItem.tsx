@@ -126,7 +126,6 @@ export default function CategoryItem({ item, categoryId, itemIndex }: CategoryIt
           onKeyDown={handleScoreKeyDown}
           onBlur={handleScoreBlur}
           className="item-score-input"
-          placeholder="0-100"
         />
       ) : (
         <div className="item-score" onDoubleClick={handleScoreDoubleClick}>
