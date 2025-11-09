@@ -124,7 +124,14 @@ export default function SetupModal({ isOpen, onClose }: SetupModalProps) {
                 className="upload-area"
                 onClick={() => document.getElementById('syllabusFileUpload')?.click()}
               >
-                <div className="upload-icon">📄</div>
+                <div className="upload-icon">
+                  <Image
+                    src="/icons/file-upload.svg"
+                    alt="Upload"
+                    width={64}
+                    height={64}
+                  />
+                </div>
                 <p>Click to upload syllabus</p>
                 <p className="upload-hint">Supports PDF, PNG, JPG</p>
               </div>
