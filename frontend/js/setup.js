@@ -70,24 +70,30 @@
       const weightBadge = el('div', {class: 'setup-weight-badge'}, [
         document.createTextNode('Weight: '),
         el('input', {
-          type: 'number',
+          type: 'text',
           value: String(cat.weight),
-          min: '0',
-          max: '100',
           'data-setup-id': String(cat.id),
           'data-field': 'weight',
-          class: 'setup-input-weight'
+          class: 'setup-input-weight',
+          placeholder: '0'
         }),
         document.createTextNode('%')
       ]);
       actions.appendChild(weightBadge);
       
-      // Delete button
+      // Delete button with trash icon
       const deleteBtn = el('button', {
-        class: 'btn btn-small btn--danger',
+        class: 'btn btn-small btn-icon btn-icon--danger',
         'data-setup-id': String(cat.id),
-        'data-action': 'delete-setup-cat'
-      }, [document.createTextNode('Delete')]);
+        'data-action': 'delete-setup-cat',
+        title: 'Delete category'
+      });
+      const trashIcon = el('img', {
+        src: '../icons/trash.svg',
+        alt: 'Delete',
+        class: 'btn-icon-img'
+      });
+      deleteBtn.appendChild(trashIcon);
       actions.appendChild(deleteBtn);
       
       header.appendChild(actions);

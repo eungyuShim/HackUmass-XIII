@@ -183,13 +183,20 @@
     itemCard.appendChild(renderItemName(item, catId, idx));
     itemCard.appendChild(renderItemScore(item, catId, idx));
     
-    // Delete button
+    // Delete button with trash icon
     const deleteBtn = el('button',{
-      class:'btn btn-small btn--danger item-delete-btn',
+      class:'btn btn-small btn-icon btn-icon--danger item-delete-btn',
       'data-action':'delete-item',
       'data-cat':String(catId),
-      'data-idx':String(idx)
-    },[document.createTextNode('Delete')]);
+      'data-idx':String(idx),
+      title:'Delete item'
+    });
+    const trashIcon = el('img',{
+      src:'../icons/trash.svg',
+      alt:'Delete',
+      class:'btn-icon-img'
+    });
+    deleteBtn.appendChild(trashIcon);
     itemCard.appendChild(deleteBtn);
     
     return itemCard;
