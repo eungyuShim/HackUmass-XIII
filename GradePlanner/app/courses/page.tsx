@@ -172,7 +172,11 @@ export default function CoursesPage() {
               </div>
             ) : (
               courses.map((course) => (
-                <div key={course.id} className="card" style={{ position: 'relative' }}>
+                <div
+                  key={course.id}
+                  className="card"
+                  style={{ position: "relative" }}
+                >
                   <div
                     style={{
                       width: "4px",
@@ -187,7 +191,10 @@ export default function CoursesPage() {
                   <h3>{course.name}</h3>
                   <div className="card-term">{course.courseCode}</div>
                   <div className="card-pill">Term: {course.term}</div>
-                  <div className="card-pill" style={{ marginTop: '4px', fontSize: '12px', opacity: 0.7 }}>
+                  <div
+                    className="card-pill"
+                    style={{ marginTop: "4px", fontSize: "12px", opacity: 0.7 }}
+                  >
                     Course ID: {course.id}
                   </div>
                   <div className="row">

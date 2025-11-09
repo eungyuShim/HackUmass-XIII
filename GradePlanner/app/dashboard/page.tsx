@@ -69,33 +69,39 @@ export default function DashboardPage() {
 
         // Convert Canvas categories to app format
         if (data.categories && data.categories.length > 0) {
-          const formattedCategories = data.categories.map((cat: any, index: number) => {
-            console.log("Processing category:", cat); // Debug log
-            
-            return {
-              id: index + 1, // Use simple incremental ID
-              name: cat.name,
-              weight: cat.weight || 0,
-              items:
-                cat.assignments?.map((assignment: any) => {
-                  console.log("Processing assignment:", assignment.name, assignment); // Debug log
-                  
-                  return {
-                    name: assignment.name,
-                    score: assignment.graded ? assignment.earned : null,
-                    maxScore: assignment.points || 0,
-                    dueDate: assignment.dueDate,
-                    submitted: assignment.submitted || false,
-                    graded: assignment.graded || false,
-                    late: assignment.late || false,
-                    missing: assignment.missing || false,
-                  };
-                }) || [],
-              editingName: false,
-              editingWeight: false,
-              showItems: true,
-            };
-          });
+          const formattedCategories = data.categories.map(
+            (cat: any, index: number) => {
+              console.log("Processing category:", cat); // Debug log
+
+              return {
+                id: index + 1, // Use simple incremental ID
+                name: cat.name,
+                weight: cat.weight || 0,
+                items:
+                  cat.assignments?.map((assignment: any) => {
+                    console.log(
+                      "Processing assignment:",
+                      assignment.name,
+                      assignment
+                    ); // Debug log
+
+                    return {
+                      name: assignment.name,
+                      score: assignment.graded ? assignment.earned : null,
+                      maxScore: assignment.points || 0,
+                      dueDate: assignment.dueDate,
+                      submitted: assignment.submitted || false,
+                      graded: assignment.graded || false,
+                      late: assignment.late || false,
+                      missing: assignment.missing || false,
+                    };
+                  }) || [],
+                editingName: false,
+                editingWeight: false,
+                showItems: true,
+              };
+            }
+          );
 
           console.log("Formatted categories:", formattedCategories); // Debug log
           setCategories(formattedCategories);
