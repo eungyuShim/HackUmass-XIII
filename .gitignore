@@ -58,6 +58,7 @@ logs/
 
 # Local config
 *.env
+*.env.local.example
 *.local
 
 # VSCode settings
