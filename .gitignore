@@ -12,6 +12,7 @@ downloads/
 .eggs/
 lib/
 lib64/
+!GradePlanner/lib/
 parts/
 var/
 *.egg-info/

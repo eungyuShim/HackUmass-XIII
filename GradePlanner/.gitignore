@@ -1,30 +1,42 @@
 # Dependencies
-node_modules
+node_modules/
 /.pnp
 .pnp.js
+.yarn/
 
 # Testing
 /coverage
+*.test.js.snap
+.vitest/
 
 # Next.js
 /.next/
 /out/
+.next/
 
 # Production
 /build
+dist/
 
 # Misc
 .DS_Store
 *.pem
+.AppleDouble
+.LSOverride
 
 # Debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.pnpm-debug.log*
+lerna-debug.log*
 
 # Local env files
 .env*.local
 .env
+.env.development.local
+.env.test.local
+.env.production.local
 
 # Vercel
 .vercel
@@ -32,3 +44,21 @@ yarn-error.log*
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+*.d.ts.map
+
+# IDE
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# OS
+Thumbs.db
