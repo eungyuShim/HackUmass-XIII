@@ -2,7 +2,7 @@
 'use client';
 
 import { create } from 'zustand';
-import { Category, CategoryItem, DEFAULT_CATEGORIES } from './types';
+import { Category, CategoryItem, DEFAULT_CATEGORIES } from '@/app/types/dashboard';
 
 interface CategoryStore {
   categories: Category[];
@@ -38,7 +38,7 @@ interface CategoryStore {
 
 export const useCategoryStore = create<CategoryStore>()((set, get) => ({
   categories: DEFAULT_CATEGORIES,
-  nextCategoryId: 5,
+  nextCategoryId: 1,
   
   setCategories: (categories: Category[]) => set({ categories }),
   
@@ -208,20 +208,40 @@ export const useCategoryStore = create<CategoryStore>()((set, get) => ({
   
   calcProgressStats: () => {
     const { categories } = get();
-    let minPct = 0;
+    let minPct = 0; // Current grade (only graded items)
+    let maxPct = 0; // Maximum possible (graded items + ungraded as 100)
     let totalWeight = 0;
     
     categories.forEach((cat) => {
       totalWeight += cat.weight;
-      const graded = cat.items.filter((item) => item.score !== null);
-      if (graded.length > 0) {
-        const avg = graded.reduce((sum, item) => sum + (item.score || 0), 0) / graded.length;
-        minPct += (cat.weight / 100) * avg;
-      }
+      const totalItems = cat.items.length;
+      
+      if (totalItems === 0) return;
+      
+      const itemWeight = cat.weight / totalItems;
+      
+      cat.items.forEach((item) => {
+        if (item.score !== null && item.score !== undefined) {
+          // Graded item: add actual score to both min and max
+          const contribution = (itemWeight / 100) * item.score;
+          minPct += contribution;
+          maxPct += contribution;
+        } else {
+          // Ungraded item: add 0 to min, 100 to max
+          maxPct += (itemWeight / 100) * 100;
+        }
+      });
     });
     
-    const remainingWeight = (100 - totalWeight) / 100;
-    const maxPct = Math.max(minPct, Math.min(100, minPct + remainingWeight * 100));
+    // Add remaining weight (categories not yet created) as 100 to max
+    const remainingWeight = 100 - totalWeight;
+    if (remainingWeight > 0) {
+      maxPct += remainingWeight;
+    }
+    
+    // Ensure values are within 0-100 range
+    minPct = Math.max(0, Math.min(100, minPct));
+    maxPct = Math.max(minPct, Math.min(100, maxPct));
     
     return { minPct, maxPct, remainingWeight };
   },
@@ -231,6 +251,6 @@ export const useCategoryStore = create<CategoryStore>()((set, get) => ({
   },
   
   reset: () => {
-    set({ categories: DEFAULT_CATEGORIES, nextCategoryId: 5 });
+    set({ categories: DEFAULT_CATEGORIES, nextCategoryId: 1 });
   },
 }));

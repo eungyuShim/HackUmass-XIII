@@ -2,8 +2,8 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useCategoryStore } from '@/components/dashboard/useCategoryStore';
-import { useProgressStore } from '@/components/dashboard/useProgressStore';
+import { useCategoryStore } from '@/app/stores/useCategoryStore';
+import { useProgressStore } from '@/app/stores/useProgressStore';
 import { loadCategories, useCourseName } from './useStorage';
 
 /**

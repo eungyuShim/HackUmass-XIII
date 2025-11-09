@@ -1,7 +1,7 @@
 // CategoryList.tsx - 전체 카테고리 리스트 컨테이너
 'use client';
 
-import { useCategoryStore } from './useCategoryStore';
+import { useCategoryStore } from '@/app/stores/useCategoryStore';
 import CategoryCard from './CategoryCard';
 
 export default function CategoryList() {

@@ -2,7 +2,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useSetupStore } from './useSetupStore';
+import { useSetupStore } from '@/app/stores/useSetupStore';
 
 interface SetupCategoryCardProps {
   category: {

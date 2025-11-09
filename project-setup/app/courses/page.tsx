@@ -22,10 +22,8 @@ export default function CoursesPage() {
     }
   }, []);
 
-  const courses: Course[] = [
-    { id: 'C-160', name: 'MICROBIO 160', term: 'Fall 2025' },
-    { id: 'C-514', name: 'CS 514 — Algorithms', term: 'Fall 2025' },
-  ];
+  // TODO: Fetch courses from Canvas API
+  const courses: Course[] = [];
 
   const handleViewCourse = (course: Course) => {
     if (typeof window !== 'undefined') {
@@ -75,21 +73,37 @@ export default function CoursesPage() {
         </header>
 
         <section className="grid" id="list">
-          {courses.map((course) => (
-            <div key={course.id} className="card">
-              <h3>{course.name}</h3>
-              <div className="card-term">{course.term}</div>
-              <div className="card-pill">Course ID: {course.id}</div>
-              <div className="row">
-                <button
-                  className="btn btn--primary"
-                  onClick={() => handleViewCourse(course)}
-                >
-                  View Course
-                </button>
-              </div>
+          {courses.length === 0 ? (
+            <div style={{ 
+              gridColumn: '1 / -1', 
+              textAlign: 'center', 
+              padding: '4rem 2rem',
+              color: 'var(--txt-muted)'
+            }}>
+              <p style={{ fontSize: '18px', marginBottom: '8px' }}>No courses found</p>
+              <p style={{ fontSize: '14px' }}>
+                {hasToken 
+                  ? 'No courses are available for this account.' 
+                  : 'Please enter your Canvas access token to view your courses.'}
+              </p>
             </div>
-          ))}
+          ) : (
+            courses.map((course) => (
+              <div key={course.id} className="card">
+                <h3>{course.name}</h3>
+                <div className="card-term">{course.term}</div>
+                <div className="card-pill">Course ID: {course.id}</div>
+                <div className="row">
+                  <button
+                    className="btn btn--primary"
+                    onClick={() => handleViewCourse(course)}
+                  >
+                    View Course
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
         </section>
       </main>
     </div>

@@ -2,8 +2,8 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { CategoryItem as CategoryItemType } from './types';
-import { useCategoryStore } from './useCategoryStore';
+import { CategoryItem as CategoryItemType } from '@/app/types/dashboard';
+import { useCategoryStore } from '@/app/stores/useCategoryStore';
 import Image from 'next/image';
 
 interface CategoryItemProps {

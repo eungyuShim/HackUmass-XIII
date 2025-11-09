@@ -3,8 +3,8 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { useSetupStore } from './useSetupStore';
-import { useCategoryStore } from '../dashboard/useCategoryStore';
+import { useSetupStore } from '@/app/stores/useSetupStore';
+import { useCategoryStore } from '@/app/stores/useCategoryStore';
 import SetupCategoryCard from './SetupCategoryCard';
 
 interface SetupModalProps {

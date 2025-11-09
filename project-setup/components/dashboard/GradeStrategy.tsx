@@ -3,14 +3,12 @@
 
 import { useEffect } from 'react';
 import Image from 'next/image';
-import { useCategoryStore } from './useCategoryStore';
-import { useProgressStore } from './useProgressStore';
-import { GRADE_OPTIONS } from './types';
+import { useCategoryStore } from '@/app/stores/useCategoryStore';
+import { useProgressStore } from '@/app/stores/useProgressStore';
 
 export default function GradeStrategy() {
   const categories = useCategoryStore((state) => state.categories);
   const currentTargetGrade = useProgressStore((state) => state.currentTargetGrade);
-  const setTargetGrade = useProgressStore((state) => state.setTargetGrade);
   const ungradedItems = useProgressStore((state) => state.ungradedItems);
   const projectedGrade = useProgressStore((state) => state.projectedGrade);
   const collectUngradedItems = useProgressStore((state) => state.collectUngradedItems);
@@ -34,10 +32,6 @@ export default function GradeStrategy() {
     calculateProjectedGrade(categories);
   }, [ungradedItems, categories, calculateProjectedGrade]);
   
-  const handleGradeClick = (grade: string) => {
-    setTargetGrade(grade as any);
-  };
-  
   const handleSliderChange = (index: number, value: number) => {
     updateSlider(index, value);
   };
@@ -50,23 +44,6 @@ export default function GradeStrategy() {
   
   return (
     <>
-      {/* Grade Selection Buttons (in header) */}
-      <div className="card">
-        <div className="grade-select-hint">Select a target letter grade to see required strategy:</div>
-        <div className="grade-options" id="gradeOptions">
-          {GRADE_OPTIONS.map((grade) => (
-            <button
-              key={grade}
-              className={`grade-btn ${currentTargetGrade === grade ? 'active' : ''}`}
-              data-grade={grade}
-              onClick={() => handleGradeClick(grade)}
-            >
-              {grade}
-            </button>
-          ))}
-        </div>
-      </div>
-      
       {/* Target Strategy Card */}
       {hasUngradedItems && (
         <div className="card" id="targetStrategy">

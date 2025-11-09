@@ -2,7 +2,7 @@
 'use client';
 
 import { create } from 'zustand';
-import { SetupCategory, DEFAULT_SETUP_CATEGORIES } from './types';
+import { SetupCategory, DEFAULT_SETUP_CATEGORIES } from '@/app/types/setup';
 
 interface SetupStore {
   setupCategories: SetupCategory[];
@@ -21,7 +21,7 @@ interface SetupStore {
 
 export const useSetupStore = create<SetupStore>()((set, get) => ({
   setupCategories: [...DEFAULT_SETUP_CATEGORIES],
-  nextSetupCategoryId: 5,
+  nextSetupCategoryId: 1,
   
   addSetupCategory: () => {
     const { setupCategories, nextSetupCategoryId } = get();
@@ -77,7 +77,7 @@ export const useSetupStore = create<SetupStore>()((set, get) => ({
   reset: () => {
     set({
       setupCategories: [...DEFAULT_SETUP_CATEGORIES],
-      nextSetupCategoryId: 5,
+      nextSetupCategoryId: 1,
     });
   },
   

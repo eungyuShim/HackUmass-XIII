@@ -2,7 +2,7 @@
 'use client';
 
 import { create } from 'zustand';
-import { UngradedItem, TargetGrade, GRADE_MAP } from './types';
+import { UngradedItem, TargetGrade, GRADE_MAP } from '@/app/types/dashboard';
 
 interface ProgressStore {
   currentTargetGrade: TargetGrade;
