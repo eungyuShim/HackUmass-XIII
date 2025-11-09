@@ -53,11 +53,6 @@ export default function CoursesPage() {
                 Dashboard
               </a>
             </li>
-            <li className="nav-item">
-              <a href="#" className="nav-link">
-                Settings
-              </a>
-            </li>
           </ul>
         </nav>
       </aside>

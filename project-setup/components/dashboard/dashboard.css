@@ -16,12 +16,14 @@
 
 .header {
   background: var(--white);
-  padding: 20px 32px;
+  padding: 24px 40px;
   border-bottom: 1px solid var(--border);
   box-shadow: var(--shadow-sm);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
+  margin: 0;
 }
 
 .header h2 {
