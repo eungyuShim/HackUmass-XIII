@@ -92,16 +92,36 @@
     // Actions (Weight, Items button and Delete button)
     const actions = el('div',{class:'category-actions'});
     actions.appendChild(renderCategoryWeight(cat));
-    actions.appendChild(el('button',{
-      class:'btn btn-small btn--ghost',
+    
+    // Items button with list icon
+    const itemsBtn = el('button',{
+      class:'btn btn-small btn-icon',
       'data-action':'toggle-items',
-      'data-id':String(cat.id)
-    },[document.createTextNode(`Items (${cat.items.length})`)]));
-    actions.appendChild(el('button',{
-      class:'btn btn-small btn--danger',
+      'data-id':String(cat.id),
+      title:`Items (${cat.items.length})`
+    });
+    const listIcon = el('img',{
+      src:'../icons/list.svg',
+      alt:'Items',
+      class:'btn-icon-img'
+    });
+    itemsBtn.appendChild(listIcon);
+    actions.appendChild(itemsBtn);
+    
+    // Delete button with trash icon
+    const deleteBtn = el('button',{
+      class:'btn btn-small btn-icon btn-icon--danger',
       'data-action':'delete-category',
-      'data-id':String(cat.id)
-    },[document.createTextNode('Delete')]));
+      'data-id':String(cat.id),
+      title:'Delete category'
+    });
+    const trashIcon = el('img',{
+      src:'../icons/trash.svg',
+      alt:'Delete',
+      class:'btn-icon-img'
+    });
+    deleteBtn.appendChild(trashIcon);
+    actions.appendChild(deleteBtn);
     
     headerDiv.appendChild(actions);
     return headerDiv;
