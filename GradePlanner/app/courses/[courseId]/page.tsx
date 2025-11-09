@@ -97,12 +97,21 @@ export default function CourseDashboardPage() {
               ); // Debug log
 
               // Convert score to percentage (score/maxScore * 100) with 1 decimal place
+              // Only use score if the assignment has actually been graded
+              // If earned is null, treat as ungraded (not yet taken)
               let scorePercentage = null;
-              if (assignment.graded && assignment.points > 0) {
+
+              // Check if assignment.earned exists and is not null
+              if (
+                assignment.earned !== null &&
+                assignment.earned !== undefined &&
+                assignment.points > 0
+              ) {
                 scorePercentage = parseFloat(
                   ((assignment.earned / assignment.points) * 100).toFixed(1)
                 );
               }
+              // If earned is null/undefined, leave scorePercentage as null (ungraded)
 
               return {
                 name: assignment.name,

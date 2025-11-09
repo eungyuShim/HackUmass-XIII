@@ -18,6 +18,7 @@ export default function SetupModal({ isOpen, onClose }: SetupModalProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string>("");
+  const [syllabusSuggestions, setSyllabusSuggestions] = useState<any[]>([]);
 
   const setupCategories = useSetupStore((state) => state.setupCategories);
   const addSetupCategory = useSetupStore((state) => state.addSetupCategory);
@@ -26,6 +27,7 @@ export default function SetupModal({ isOpen, onClose }: SetupModalProps) {
   const setSetupCategories = useSetupStore((state) => state.setSetupCategories);
 
   const setCategories = useCategoryStore((state) => state.setCategories);
+  const categories = useCategoryStore((state) => state.categories);
   const bumpId = useCategoryStore((state) => state.bumpId);
 
   if (!isOpen) return null;
@@ -36,6 +38,7 @@ export default function SetupModal({ isOpen, onClose }: SetupModalProps) {
     setSelectedFile(null);
     setIsUploading(false);
     setUploadError("");
+    setSyllabusSuggestions([]);
     onClose();
   };
 
@@ -103,7 +106,7 @@ export default function SetupModal({ isOpen, onClose }: SetupModalProps) {
         throw new Error(result.error || "Failed to parse syllabus");
       }
 
-      // Load parsed categories into setup store
+      // Parse syllabus categories
       if (result.data && result.data.categories) {
         const parsedCategories = result.data.categories.map(
           (cat: any, index: number) => ({
@@ -114,8 +117,22 @@ export default function SetupModal({ isOpen, onClose }: SetupModalProps) {
           })
         );
 
-        setSetupCategories(parsedCategories);
-        setUploadStatus("✓ Syllabus parsed successfully!");
+        // If Canvas data exists, merge with syllabus (Syllabus fills gaps)
+        if (categories.length > 0) {
+          const mergedCategories = mergeSyllabusWithCanvas(
+            categories,
+            parsedCategories
+          );
+          setSetupCategories(mergedCategories);
+          setUploadStatus(
+            "✓ Syllabus merged with Canvas data! Review suggestions below."
+          );
+          setSyllabusSuggestions(parsedCategories);
+        } else {
+          // No Canvas data, use syllabus as primary source
+          setSetupCategories(parsedCategories);
+          setUploadStatus("✓ Syllabus parsed successfully!");
+        }
       } else {
         setUploadStatus("⚠ Parsing completed but no categories found");
       }
@@ -133,6 +150,43 @@ export default function SetupModal({ isOpen, onClose }: SetupModalProps) {
     } finally {
       setIsUploading(false);
     }
+  };
+
+  // Merge syllabus with Canvas data (syllabus fills gaps, doesn't replace)
+  const mergeSyllabusWithCanvas = (
+    canvasCategories: any[],
+    syllabusCategories: any[]
+  ) => {
+    const merged = [...canvasCategories];
+
+    syllabusCategories.forEach((sylCat) => {
+      // Check if category exists in Canvas
+      const existingIndex = merged.findIndex(
+        (canvasCat) =>
+          canvasCat.name.toLowerCase() === sylCat.name.toLowerCase()
+      );
+
+      if (existingIndex === -1) {
+        // Category doesn't exist in Canvas - ADD IT (보완)
+        merged.push({
+          id: Math.max(...merged.map((c) => c.id), 0) + 1,
+          name: sylCat.name,
+          weight: sylCat.weight,
+          count: sylCat.count,
+        });
+      } else {
+        // Category exists - UPDATE count if Canvas has fewer items
+        const canvasCat = merged[existingIndex];
+        if (canvasCat.count < sylCat.count) {
+          merged[existingIndex] = {
+            ...canvasCat,
+            count: sylCat.count, // Use syllabus count if higher
+          };
+        }
+      }
+    });
+
+    return merged;
   };
 
   const handleBackToUpload = () => {

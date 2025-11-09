@@ -18,8 +18,8 @@ export default function ProgressBar() {
   );
   const setTargetGrade = useProgressStore((state) => state.setTargetGrade);
   const maxPossibleGrade = useProgressStore((state) => state.maxPossibleGrade);
-  const calculateMaxPossibleGrade = useProgressStore(
-    (state) => state.calculateMaxPossibleGrade
+  const calculateAllGrades = useProgressStore(
+    (state) => state.calculateAllGrades
   );
 
   // Animated progress value
@@ -28,14 +28,21 @@ export default function ProgressBar() {
   // Recalculate stats whenever categories change
   const stats = calcProgressStats();
 
-  // Calculate max possible grade
+  // Calculate max possible grade (with non-graded = 100)
   useEffect(() => {
-    calculateMaxPossibleGrade(categories);
-  }, [categories, calculateMaxPossibleGrade]);
+    if (categories.length > 0) {
+      console.log(
+        "🎯 ProgressBar: Calling calculateAllGrades with",
+        categories.length,
+        "categories"
+      );
+      calculateAllGrades(categories);
+    }
+  }, [categories]);
 
   // Animate progress bar
   useEffect(() => {
-    const maxPercentage = Math.min(100, Math.max(0, stats.maxPct));
+    const maxPercentage = Math.min(100, Math.max(0, maxPossibleGrade));
     let start = animatedProgress;
     const end = maxPercentage;
     const duration = 800; // ms
@@ -58,26 +65,24 @@ export default function ProgressBar() {
     };
 
     requestAnimationFrame(animate);
-  }, [stats.maxPct]);
+  }, [maxPossibleGrade]);
 
   // Set initial target grade to highest achievable grade
   useEffect(() => {
-    if (categories.length > 0) {
-      const maxGrade = calculateMaxPossibleGrade(categories);
-
+    if (categories.length > 0 && maxPossibleGrade > 0) {
       // Find the highest achievable grade
       const achievableGrade = GRADE_OPTIONS.find((grade) => {
         const threshold = GRADE_MAP[grade as TargetGrade];
-        return maxGrade >= threshold;
+        return maxPossibleGrade >= threshold;
       });
 
       if (achievableGrade && achievableGrade !== currentTargetGrade) {
         setTargetGrade(achievableGrade as TargetGrade);
       }
     }
-  }, [categories.length]); // Only run when categories are first loaded
+  }, [categories.length, maxPossibleGrade]); // Only run when categories are first loaded
 
-  const maxPercentage = Math.min(100, Math.max(0, stats.maxPct));
+  const maxPercentage = Math.min(100, Math.max(0, maxPossibleGrade));
   const targetThreshold = GRADE_MAP[currentTargetGrade];
   const pinPosition = targetThreshold; // Position in percentage
 

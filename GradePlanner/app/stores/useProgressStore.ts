@@ -4,13 +4,22 @@
 import { create } from "zustand";
 import { UngradedItem, TargetGrade, GRADE_MAP } from "@/app/types/dashboard";
 import { StrategyType, getStrategy } from "@/app/types/strategy";
+import {
+  calculateCurrentGradeFromCategories,
+  calculateMaxPossibleGradeFromCategories,
+  calculateMinPossibleGradeFromCategories,
+} from "@/lib/calculations/gradeUtils";
 
 interface ProgressStore {
   currentTargetGrade: TargetGrade;
   ungradedItems: UngradedItem[];
   totalDeductiblePoints: number;
-  projectedGrade: number;
-  maxPossibleGrade: number;
+
+  // Grade calculations
+  currentGrade: number; // Only graded items
+  projectedGrade: number; // With strategy applied
+  maxPossibleGrade: number; // Ungraded = 100
+  minPossibleGrade: number; // Ungraded = 0
   currentStrategy: StrategyType;
 
   // Actions
@@ -22,15 +31,17 @@ interface ProgressStore {
   redistributeDeductions: (excludeIdx: number, needToFree: number) => boolean;
   togglePin: (index: number) => void;
   calculateProjectedGrade: (categories: any[]) => number;
-  calculateMaxPossibleGrade: (categories: any[]) => number;
+  calculateAllGrades: (categories: any[]) => void;
 }
 
 export const useProgressStore = create<ProgressStore>()((set, get) => ({
   currentTargetGrade: "A",
   ungradedItems: [],
   totalDeductiblePoints: 0,
+  currentGrade: 0,
   projectedGrade: 0,
   maxPossibleGrade: 0,
+  minPossibleGrade: 0,
   currentStrategy: "proportional",
 
   setTargetGrade: (grade: TargetGrade) => {
@@ -43,6 +54,18 @@ export const useProgressStore = create<ProgressStore>()((set, get) => ({
     const { collectUngradedItems } = get();
     const categories = []; // Will be passed from component
     // This will be triggered from component side
+  },
+
+  calculateAllGrades: (categories: any[]) => {
+    const current = calculateCurrentGradeFromCategories(categories);
+    const max = calculateMaxPossibleGradeFromCategories(categories);
+    const min = calculateMinPossibleGradeFromCategories(categories);
+
+    set({
+      currentGrade: current,
+      maxPossibleGrade: max,
+      minPossibleGrade: min,
+    });
   },
 
   collectUngradedItems: (categories: any[]) => {
@@ -87,43 +110,15 @@ export const useProgressStore = create<ProgressStore>()((set, get) => ({
 
     set({ ungradedItems });
     get().calculateTotalDeductiblePoints(categories);
+    get().calculateAllGrades(categories); // ✅ Calculate all grades
   },
 
   calculateTotalDeductiblePoints: (categories: any[]) => {
     const { currentTargetGrade, ungradedItems, currentStrategy } = get();
     const targetGrade = GRADE_MAP[currentTargetGrade];
 
-    // Calculate current grade from graded items
-    let currentGrade = 0;
-    let gradedWeight = 0;
-
-    categories.forEach((cat) => {
-      const items = cat.items;
-      const totalItemsInCategory = items.length;
-      if (totalItemsInCategory === 0) return;
-
-      const itemWeight = cat.weight / totalItemsInCategory;
-
-      items.forEach((item: any) => {
-        if (
-          item.score !== null &&
-          item.score !== undefined &&
-          item.score !== ""
-        ) {
-          currentGrade += (itemWeight / 100) * item.score;
-          gradedWeight += itemWeight;
-        }
-      });
-    });
-
-    // Calculate remaining weight from ungraded items
-    const ungradedWeight = ungradedItems.reduce(
-      (sum, item) => sum + item.itemWeight,
-      0
-    );
-
-    // Max possible grade is current grade + all ungraded items at 100%
-    const maxPossible = currentGrade + ungradedWeight;
+    // Use new calculation method for max possible
+    const maxPossible = calculateMaxPossibleGradeFromCategories(categories);
     const totalDeductiblePoints = maxPossible - targetGrade;
 
     // Use selected strategy to calculate initial distribution
@@ -358,39 +353,5 @@ export const useProgressStore = create<ProgressStore>()((set, get) => ({
     const projected = parseFloat(total.toFixed(2));
     set({ projectedGrade: projected });
     return projected;
-  },
-
-  calculateMaxPossibleGrade: (categories: any[]): number => {
-    let total = 0;
-
-    categories.forEach((cat) => {
-      const items = cat.items;
-      const totalItemsInCategory = items.length;
-      if (totalItemsInCategory === 0) return;
-
-      const itemWeight = cat.weight / totalItemsInCategory;
-
-      items.forEach((item: any) => {
-        let itemScore = 0;
-
-        if (
-          item.score !== null &&
-          item.score !== undefined &&
-          item.score !== ""
-        ) {
-          // Use actual score for graded items
-          itemScore = item.score;
-        } else {
-          // Assume 100% for ungraded items
-          itemScore = 100;
-        }
-
-        total += (itemWeight / 100) * itemScore;
-      });
-    });
-
-    const maxPossible = parseFloat(total.toFixed(2));
-    set({ maxPossibleGrade: maxPossible });
-    return maxPossible;
   },
 }));

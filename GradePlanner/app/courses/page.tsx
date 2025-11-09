@@ -27,7 +27,7 @@ export default function CoursesPage() {
     type: "success" | "error" | "info" | "warning";
   } | null>(null);
   const router = useRouter();
-  const { isAuthenticated, clearAuth } = useAuthStore();
+  const { isAuthenticated, clearAuth, userName } = useAuthStore();
 
   // Use SWR for data fetching
   const { courses, isLoading, isError, error, refresh } = useCanvasCourses();
@@ -159,10 +159,23 @@ export default function CoursesPage() {
               Select a course to get started
             </div>
           </div>
-          <div className="pill" id="tok">
-            {mounted && isAuthenticated()
-              ? "✓ Token detected"
-              : "Demo mode (no token)"}
+          <div
+            className="pill"
+            id="tok"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            {mounted && isAuthenticated() ? (
+              <>
+                <span style={{ fontSize: "16px" }}>👤</span>
+                <span>{userName || "User"}</span>
+              </>
+            ) : (
+              "Demo mode (no token)"
+            )}
           </div>
         </header>
 

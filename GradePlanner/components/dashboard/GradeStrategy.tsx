@@ -27,8 +27,8 @@ export default function GradeStrategy() {
   const calculateProjectedGrade = useProgressStore(
     (state) => state.calculateProjectedGrade
   );
-  const calculateMaxPossibleGrade = useProgressStore(
-    (state) => state.calculateMaxPossibleGrade
+  const calculateAllGrades = useProgressStore(
+    (state) => state.calculateAllGrades
   );
   const setStrategy = useProgressStore((state) => state.setStrategy);
 

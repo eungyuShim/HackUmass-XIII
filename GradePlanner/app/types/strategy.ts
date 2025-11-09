@@ -11,9 +11,9 @@ export interface Strategy {
 // Proportional Strategy - 비례 배분 전략 (Python Proportional Distribution 완전 구현)
 export const proportionalStrategy: Strategy = {
   id: "proportional",
-  name: "Proportional Distribution",
+  name: "Equal Distribution",
   description:
-    "Distribute deductions proportionally based on item weights (비례 배분)",
+    "Distribute deductions equally across all items (균등 감점)",
   calculate: (ungradedItems, totalDeductiblePoints) => {
     if (totalDeductiblePoints <= 0) {
       return ungradedItems.map((item) => ({
@@ -142,8 +142,8 @@ export const proportionalStrategy: Strategy = {
 // Equal Strategy - 균등 감점 + 희생 전략 (Python Equal Distribution 완전 구현)
 export const equalStrategy: Strategy = {
   id: "equal",
-  name: "Equal Distribution",
-  description: "Distribute deductions equally across all items (균등 감점)",
+  name: "Proportional Distribution",
+  description: "Distribute deductions proportionally based on item weights (비례 배분)",
   calculate: (ungradedItems, totalDeductiblePoints) => {
     if (totalDeductiblePoints <= 0 || ungradedItems.length === 0) {
       return ungradedItems.map((item) => ({

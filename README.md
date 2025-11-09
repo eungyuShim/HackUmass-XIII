@@ -132,7 +132,7 @@ MIT License - see [LICENSE](LICENSE) file
 
 ## 👥 Team
 
-Built with ❤️ at **HackUMass XIII 2024**
+Built with ❤️ at **HackUMass XIII 2025**
 
 - [Eungyu Shim](https://github.com/eungyuShim)
 - [Jongchan](https://github.com/xxjcpark)

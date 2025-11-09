@@ -5,7 +5,7 @@ interface CourseCardProps {
   id: string;
   name: string;
   courseCode: string;
-  term: string;
+  term: string; // Keep for backward compatibility but won't display
   color: string;
   onViewCourse: () => void;
 }
@@ -14,7 +14,6 @@ export const CourseCard: React.FC<CourseCardProps> = ({
   id,
   name,
   courseCode,
-  term,
   color,
   onViewCourse,
 }) => {
@@ -28,7 +27,6 @@ export const CourseCard: React.FC<CourseCardProps> = ({
         <h3 className="course-card__title">{name}</h3>
         <div className="course-card__code">{courseCode}</div>
         <div className="course-card__info">
-          <span className="course-card__pill">Term: {term}</span>
           <span className="course-card__pill course-card__pill--muted">
             Course ID: {id}
           </span>

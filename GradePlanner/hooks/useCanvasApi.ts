@@ -69,7 +69,7 @@ export function useCourseAssignments(courseId: string | null) {
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: true,
-      dedupingInterval: 120000, // 2 minutes for assignments
+      dedupingInterval: 5000, // Reduced to 5 seconds for faster updates during development
       errorRetryCount: 3,
       errorRetryInterval: 5000,
     }
