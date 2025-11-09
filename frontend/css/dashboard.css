@@ -402,15 +402,45 @@
   color: var(--txt);
 }
 
-.btn--danger {
+/* Icon buttons */
+.btn-icon {
   background: transparent;
-  color: #dc2626;
-  border: 1px solid #dc2626;
+  border: 1px solid var(--border);
+  padding: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  min-height: 36px;
 }
 
-.btn--danger:hover {
+.btn-icon:hover {
+  background: var(--bg-gray);
+  border-color: var(--accent);
+}
+
+.btn-icon--danger {
+  border-color: #dc2626;
+}
+
+.btn-icon--danger:hover {
   background: #dc2626;
-  color: var(--white);
+  border-color: #dc2626;
+}
+
+.btn-icon--danger:hover .btn-icon-img {
+  filter: brightness(0) invert(1);
+}
+
+.btn-icon-img {
+  width: 18px;
+  height: 18px;
+  display: block;
+  filter: invert(13%) sepia(51%) saturate(4891%) hue-rotate(349deg) brightness(93%) contrast(93%);
+}
+
+.btn-icon--danger .btn-icon-img {
+  filter: invert(21%) sepia(93%) saturate(4891%) hue-rotate(349deg) brightness(93%) contrast(93%);
 }
 
 .btn-small {
