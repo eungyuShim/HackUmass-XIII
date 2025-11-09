@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { CanvasApiClient } from "@/lib/canvas/client";
-import { mapAssignmentGroup } from "@/lib/canvas/mapper";
 
-// GET /api/canvas/assignments/[courseId]
-// Fetches assignment groups and assignments for a specific course
+// GET /api/canvas/assignment-groups/[courseId]
+// Fetches assignment groups for a specific course
 export async function GET(
   request: NextRequest,
   { params }: { params: { courseId: string } }
@@ -24,19 +23,14 @@ export async function GET(
     // Create Canvas API client
     const client = new CanvasApiClient(baseUrl, token);
     
-    // Fetch assignment groups (includes assignments)
+    // Fetch assignment groups
     const assignmentGroups = await client.getAssignmentGroups(parseInt(courseId));
-    
-    // Map to app format
-    const categories = assignmentGroups.map(group => 
-      mapAssignmentGroup(group, courseId)
-    );
 
-    return NextResponse.json({ categories });
+    return NextResponse.json({ assignmentGroups });
   } catch (error) {
-    console.error("Assignments fetch error:", error);
+    console.error("Assignment groups fetch error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to fetch assignments" },
+      { error: error instanceof Error ? error.message : "Failed to fetch assignment groups" },
       { status: 500 }
     );
   }

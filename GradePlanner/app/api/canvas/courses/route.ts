@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { CanvasApiClient } from "@/lib/canvas/client";
+import { mapCanvasCourse } from "@/lib/canvas/mapper";
 
 // GET /api/canvas/courses
 // Fetches list of active courses from Canvas
@@ -14,29 +16,22 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const response = await fetch(
-      `${baseUrl}/api/v1/courses?enrollment_state=active&per_page=100`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    if (!response.ok) {
-      return NextResponse.json(
-        { error: "Failed to fetch courses" },
-        { status: response.status }
-      );
-    }
-
-    const courses = await response.json();
+    // Create Canvas API client
+    const client = new CanvasApiClient(baseUrl, token);
+    
+    // Fetch courses
+    const canvasCourses = await client.getCourses();
+    
+    // Map to app format
+    const courses = canvasCourses
+      .filter(course => course.workflow_state === 'available')
+      .map(mapCanvasCourse);
 
     return NextResponse.json({ courses });
   } catch (error) {
     console.error("Courses fetch error:", error);
     return NextResponse.json(
-      { error: "Failed to fetch courses" },
+      { error: error instanceof Error ? error.message : "Failed to fetch courses" },
       { status: 500 }
     );
   }
