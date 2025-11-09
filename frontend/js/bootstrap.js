@@ -11,6 +11,7 @@
     GPProgress.initGradePin();
     GPProgress.bindGradeSelection();
     GPProgress.bindPinHover();
+    GPProgress.bindSliderChanges();
     GPEvents.bindCore();
     // first visit
     if(!sessionStorage.getItem('dashboard_visited')){ GPSetup.openSetupModal(); sessionStorage.setItem('dashboard_visited','true'); }
