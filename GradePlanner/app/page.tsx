@@ -79,9 +79,8 @@ export default function HomePage() {
           <div className="hint">
             <span
               id="how"
-              className="link"
+              className="link link-cursor"
               onClick={() => setShowModal(true)}
-              style={{ cursor: 'pointer' }}
             >
               Don't know how to get an access token?
             </span>
@@ -99,7 +98,6 @@ export default function HomePage() {
         className="modal"
         aria-hidden={!showModal}
         role="dialog"
-        style={{ display: showModal ? 'flex' : 'none' }}
       >
         <div className="card">
           <h3>How to get an access token</h3>
@@ -117,7 +115,7 @@ export default function HomePage() {
               <span>Paste it here and click the arrow to continue</span>
             </li>
           </ol>
-          <div style={{ textAlign: 'right' }}>
+          <div className="modal-close-wrapper">
             <button
               id="close"
               className="btn btn--outline"

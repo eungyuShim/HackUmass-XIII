@@ -13,6 +13,7 @@ import '@/components/setup/setup.css';
 
 export default function DashboardPage() {
   const [isSetupModalOpen, setIsSetupModalOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const courseName = useCourseName();
   const isFirstVisit = useFirstVisit();
   
@@ -26,45 +27,87 @@ export default function DashboardPage() {
   return (
     <div className="layout">
       {/* Sidebar */}
-      <aside className="sidebar">
+      <aside className={`sidebar ${isSidebarOpen ? 'sidebar-open' : ''}`}>
         <div className="sidebar-header">
           <h1>Grade<br/>Planner</h1>
           <p>Academic planning made easy</p>
+          <button 
+            className="sidebar-close"
+            onClick={() => setIsSidebarOpen(false)}
+            aria-label="Close menu"
+          >
+            ✕
+          </button>
         </div>
         <nav>
           <ul className="nav-list">
             <li className="nav-item">
               <a href="/courses" className="nav-link">
-                ← Back to Courses
-              </a>
-            </li>
-            <li className="nav-item">
-              <a href="/dashboard" className="nav-link active">
-                Dashboard
+                Back to Courses
               </a>
             </li>
           </ul>
+          
+          <div className="sidebar-section">
+            <div className="sidebar-section-title">
+              Course Tools
+            </div>
+            <ul className="nav-list">
+              <li className="nav-item">
+                <button 
+                  onClick={() => setIsSetupModalOpen(true)}
+                  className="nav-link nav-link-button"
+                >
+                  Setup Course Data
+                </button>
+              </li>
+            </ul>
+          </div>
+          
+          <div className="sidebar-section">
+            <div className="sidebar-section-title">
+              Data
+            </div>
+            <ul className="nav-list">
+              <li className="nav-item">
+                <button 
+                  onClick={() => window.location.reload()}
+                  className="nav-link nav-link-button"
+                >
+                  Refresh Data
+                </button>
+              </li>
+            </ul>
+          </div>
         </nav>
       </aside>
+
+      {/* Sidebar Overlay for Mobile */}
+      {isSidebarOpen && (
+        <div 
+          className="sidebar-overlay"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
 
       {/* Main Content */}
       <div className="main-content">
         <header className="header">
+          <button 
+            className="mobile-menu-toggle"
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            aria-label="Toggle menu"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M3 12h18M3 6h18M3 18h18"/>
+            </svg>
+          </button>
           <div>
-            <div style={{ fontSize: '13px', color: 'var(--txt-muted)', marginBottom: '4px' }}>
+            <div className="header-subtitle">
               Current Course
             </div>
             <h2 id="course">{courseName}</h2>
           </div>
-          <button 
-            className="upload-btn" 
-            onClick={() => setIsSetupModalOpen(true)}
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
-            </svg>
-            Syllabus Upload
-          </button>
         </header>
 
         <div className="wrap">
