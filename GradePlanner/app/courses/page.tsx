@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import '@/components/shared/global.css';
-import '@/components/courses/course.css';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import "@/components/shared/global.css";
+import "@/components/courses/course.css";
 
 interface Course {
   id: string;
@@ -17,15 +17,15 @@ export default function CoursesPage() {
   const [hasToken, setHasToken] = useState(false);
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const router = useRouter();
 
   useEffect(() => {
     const fetchCourses = async () => {
-      if (typeof window === 'undefined') return;
+      if (typeof window === "undefined") return;
 
-      const token = sessionStorage.getItem('canvas_token');
-      const baseUrl = sessionStorage.getItem('canvas_base_url');
+      const token = sessionStorage.getItem("canvas_token");
+      const baseUrl = sessionStorage.getItem("canvas_base_url");
 
       if (!token || !baseUrl) {
         setHasToken(false);
@@ -35,26 +35,26 @@ export default function CoursesPage() {
 
       setHasToken(true);
       setLoading(true);
-      setError('');
+      setError("");
 
       try {
-        const response = await fetch('/api/canvas/courses', {
+        const response = await fetch("/api/canvas/courses", {
           headers: {
-            'x-canvas-token': token,
-            'x-canvas-base-url': baseUrl,
+            "x-canvas-token": token,
+            "x-canvas-base-url": baseUrl,
           },
         });
 
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.error || 'Failed to fetch courses');
+          throw new Error(data.error || "Failed to fetch courses");
         }
 
         setCourses(data.courses || []);
       } catch (err) {
-        console.error('Failed to fetch courses:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load courses');
+        console.error("Failed to fetch courses:", err);
+        setError(err instanceof Error ? err.message : "Failed to load courses");
       } finally {
         setLoading(false);
       }
@@ -64,10 +64,10 @@ export default function CoursesPage() {
   }, []);
 
   const handleViewCourse = (course: Course) => {
-    if (typeof window !== 'undefined') {
-      sessionStorage.setItem('current_course_id', course.id);
-      sessionStorage.setItem('current_course_name', course.name);
-      router.push('/dashboard');
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("current_course_id", course.id);
+      sessionStorage.setItem("current_course_name", course.name);
+      router.push("/dashboard");
     }
   };
 
@@ -76,7 +76,11 @@ export default function CoursesPage() {
       {/* Sidebar */}
       <aside className="sidebar">
         <div className="sidebar-header">
-          <h1>Grade<br/>Planner</h1>
+          <h1>
+            Grade
+            <br />
+            Planner
+          </h1>
           <p>Academic planning made easy</p>
         </div>
         <nav>
@@ -101,56 +105,66 @@ export default function CoursesPage() {
           <h2>My Courses</h2>
           <div className="header-subtitle">Select a course to get started</div>
           <div className="pill" id="tok">
-            {hasToken ? '✓ Token detected' : 'Demo mode (no token)'}
+            {hasToken ? "✓ Token detected" : "Demo mode (no token)"}
           </div>
         </header>
 
         <div className="grid-wrapper">
           <section className="grid" id="list">
             {loading ? (
-              <div style={{ 
-                gridColumn: '1 / -1', 
-                textAlign: 'center', 
-                padding: '4rem 2rem',
-                color: 'var(--txt-muted)'
-              }}>
-                <p style={{ fontSize: '18px' }}>Loading courses...</p>
+              <div
+                style={{
+                  gridColumn: "1 / -1",
+                  textAlign: "center",
+                  padding: "4rem 2rem",
+                  color: "var(--txt-muted)",
+                }}
+              >
+                <p style={{ fontSize: "18px" }}>Loading courses...</p>
               </div>
             ) : error ? (
-              <div style={{ 
-                gridColumn: '1 / -1', 
-                textAlign: 'center', 
-                padding: '4rem 2rem',
-                color: '#ef4444'
-              }}>
-                <p style={{ fontSize: '18px', marginBottom: '8px' }}>Error loading courses</p>
-                <p style={{ fontSize: '14px' }}>{error}</p>
-                <button 
-                  className="btn btn--outline" 
-                  style={{ marginTop: '16px' }}
-                  onClick={() => router.push('/')}
+              <div
+                style={{
+                  gridColumn: "1 / -1",
+                  textAlign: "center",
+                  padding: "4rem 2rem",
+                  color: "#ef4444",
+                }}
+              >
+                <p style={{ fontSize: "18px", marginBottom: "8px" }}>
+                  Error loading courses
+                </p>
+                <p style={{ fontSize: "14px" }}>{error}</p>
+                <button
+                  className="btn btn--outline"
+                  style={{ marginTop: "16px" }}
+                  onClick={() => router.push("/")}
                 >
                   Back to Login
                 </button>
               </div>
             ) : courses.length === 0 ? (
-              <div style={{ 
-                gridColumn: '1 / -1', 
-                textAlign: 'center', 
-                padding: '4rem 2rem',
-                color: 'var(--txt-muted)'
-              }}>
-                <p style={{ fontSize: '18px', marginBottom: '8px' }}>No courses found</p>
-                <p style={{ fontSize: '14px' }}>
-                  {hasToken 
-                    ? 'No active courses are available for this account.' 
-                    : 'Please enter your Canvas access token to view your courses.'}
+              <div
+                style={{
+                  gridColumn: "1 / -1",
+                  textAlign: "center",
+                  padding: "4rem 2rem",
+                  color: "var(--txt-muted)",
+                }}
+              >
+                <p style={{ fontSize: "18px", marginBottom: "8px" }}>
+                  No courses found
+                </p>
+                <p style={{ fontSize: "14px" }}>
+                  {hasToken
+                    ? "No active courses are available for this account."
+                    : "Please enter your Canvas access token to view your courses."}
                 </p>
                 {!hasToken && (
-                  <button 
-                    className="btn btn--primary" 
-                    style={{ marginTop: '16px' }}
-                    onClick={() => router.push('/')}
+                  <button
+                    className="btn btn--primary"
+                    style={{ marginTop: "16px" }}
+                    onClick={() => router.push("/")}
                   >
                     Enter Token
                   </button>
@@ -158,21 +172,24 @@ export default function CoursesPage() {
               </div>
             ) : (
               courses.map((course) => (
-                <div key={course.id} className="card">
-                  <div 
-                    style={{ 
-                      width: '4px', 
-                      height: '100%', 
+                <div key={course.id} className="card" style={{ position: 'relative' }}>
+                  <div
+                    style={{
+                      width: "4px",
+                      height: "100%",
                       backgroundColor: course.color,
-                      position: 'absolute',
+                      position: "absolute",
                       left: 0,
                       top: 0,
-                      borderRadius: '8px 0 0 8px'
+                      borderRadius: "8px 0 0 8px",
                     }}
                   />
                   <h3>{course.name}</h3>
                   <div className="card-term">{course.courseCode}</div>
-                  <div className="card-pill">{course.term}</div>
+                  <div className="card-pill">Term: {course.term}</div>
+                  <div className="card-pill" style={{ marginTop: '4px', fontSize: '12px', opacity: 0.7 }}>
+                    Course ID: {course.id}
+                  </div>
                   <div className="row">
                     <button
                       className="btn btn--primary"
