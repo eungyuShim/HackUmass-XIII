@@ -1,37 +1,6 @@
 /* dashboard.css — course dashboard */
-.layout {
-  display: flex;
-  min-height: 100vh;
-}
 
-/* 메인 콘텐츠 영역 */
-.main-content {
-  flex: 1;
-  background: var(--bg-left);
-  overflow-y: auto;
-  overflow-x: hidden;
-  /* Add margin-left for fixed sidebar */
-  margin-left: 260px;
-}
-
-.header {
-  background: var(--white);
-  padding: 32px 40px;
-  border-bottom: 1px solid var(--border);
-  box-shadow: var(--shadow-sm);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  margin: 0;
-}
-
-.header h2 {
-  margin: 0;
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--txt);
-}
+/* Remove duplicate layout styles - now in global.css */
 
 .wrap {
   max-width: 1200px;
@@ -40,49 +9,17 @@
   padding: 28px 32px 48px;
 }
 
-/* Syllabus upload modal overlay */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
+/* Remove duplicate modal styles - now in global.css */
 
-.modal-content {
-  background: var(--white);
-  border-radius: 16px;
-  padding: 36px;
-  max-width: 500px;
-  width: 90%;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-}
-
-/* 카드 스타일 개선 */
+/* Dashboard specific card styles */
 .card {
-  background: var(--white);
-  border: 1px solid var(--border-light);
-  border-radius: 12px;
   padding: 28px;
   margin: 16px auto;
-  box-shadow: var(--shadow-md);
   overflow: visible;
-  width: 100%;
+  min-width: 480px;
   max-width: 100%;
-  min-width: 320px;
 }
 
-.card h3 {
-  margin: 0 0 20px;
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--txt);
-}
 
 /* 카테고리 관리를 위한 그리드 */
 .category-grid {
@@ -359,104 +296,15 @@
   margin-left: auto;
 }
 
-/* Smaller input variant used across forms */
-.input--sm { height: 34px; font-size: 13px; padding: 0 10px; }
-
 /* Prevent shimmer from causing horizontal overflow */
 .progress-bar-bg {
   overflow: hidden;
 }
 
-/* 버튼 스타일 개선 */
-.btn {
-  border: 0;
-  border-radius: 8px;
-  padding: 11px 22px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all .2s;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
+/* Remove duplicate button styles - now in global.css */
 
-.btn--primary {
-  /* UMass accent color */
-  background: var(--accent);
-  color: var(--white);
-}
-
-.btn--primary:hover {
-  background: var(--accent-hover);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
-}
-
-.btn--ghost {
-  background: transparent;
-  color: var(--txt-muted);
-  border: 1px solid var(--border);
-}
-
-.btn--ghost:hover {
-  background: var(--bg-gray);
-  color: var(--txt);
-}
-
-.btn--secondary {
-  background: var(--accent);
-  color: var(--white);
-}
-
-.btn--secondary:hover {
-  background: var(--accent-hover);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
-}
-
-/* Icon buttons */
-.btn-icon {
-  background: transparent;
-  border: none;
-  padding: 8px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 36px;
-  min-height: 36px;
-  border-radius: 6px;
-  transition: all 0.2s;
-}
-
-.btn-icon:hover {
-  background: var(--bg-gray);
-}
-
-.btn-icon--danger:hover {
-  background: #fee;
-}
-
-.btn-icon--danger:hover .btn-icon-img {
-  filter: invert(21%) sepia(93%) saturate(4891%) hue-rotate(349deg) brightness(93%) contrast(93%);
-}
-
-.btn-icon-img {
-  width: 20px;
-  height: 20px;
-  display: block;
-  filter: grayscale(100%) brightness(0.6);
-  transition: all 0.2s;
-}
-
-.btn-icon:hover .btn-icon-img {
-  filter: grayscale(0%) brightness(1);
-}
-
-.btn-small {
-  padding: 7px 14px;
-  font-size: 12px;
-}
+/* Smaller input variant used across forms */
+.input--sm { height: 34px; font-size: 13px; padding: 0 10px; }
 
 /* Upload button with SVG icon */
 .upload-btn {
@@ -482,24 +330,10 @@
 
 .upload-btn svg {
   width: 20px;
-  height: 20px;
+  box-shadow: var(--shadow-md);
 }
 
-/* 입력 필드 스타일 */
-.input {
-  height: 42px;
-  border: 2px solid var(--border);
-  border-radius: 8px;
-  padding: 0 12px;
-  font-size: 14px;
-  width: 100%;
-  transition: border-color .2s;
-}
-
-.input:focus {
-  outline: 0;
-  border-color: var(--accent);
-}
+/* Remove duplicate input styles - now in global.css */
 
 .input-group {
   margin: 16px 0;
@@ -877,17 +711,7 @@
   }
 }
 
-/* 행 레이아웃 */
-.row {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.row.space-between {
-  justify-content: space-between;
-}
+/* Remove duplicate row styles - now in global.css */
 
 /* Setup modal specific styles */
 .setup-modal {
@@ -961,25 +785,9 @@
 
 /* 반응형 - 900px 이하에서 사이드바 숨김 */
 @media (max-width: 900px) {
-  .sidebar {
-    display: none;
-  }
-
-  .main-content {
-    /* Remove margin on mobile */
-    margin-left: 0;
-  }
-
   .wrap {
     padding: 20px 16px;
     width: 100%;
-  }
-
-  .header {
-    padding: 16px 20px;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
   }
 
   .card {

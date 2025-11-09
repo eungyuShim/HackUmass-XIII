@@ -2,37 +2,14 @@
 body {
   background: var(--bg-left);
   margin: 0;
-  /* Allow page to scroll; previous overflow:hidden hid content on smaller screens */
   overflow-x: hidden;
 }
 
-.layout {
-  /* Align with dashboard layout approach for consistency */
-  display: flex;
-  min-height: 100vh;
-}
+/* Course specific header styles */
 
-/* Main content area */
-.main-content {
-  flex: 1;
-  background: var(--bg-left);
-  overflow-y: auto;
-  /* Offset for fixed sidebar */
-  margin-left: 260px;
-}
-
-.header {
-  background: var(--white);
-  padding: 32px 40px;
-  border-bottom: 1px solid var(--border);
-  box-shadow: var(--shadow-sm);
-  width: 100%;
-  margin: 0;
-}
-
+/* Course specific header styles */
 .header h2 {
   font-size: 32px;
-  font-weight: 700;
   margin-bottom: 8px;
 }
 
@@ -66,13 +43,8 @@ body {
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
 }
 
+/* Course specific card styles */
 .card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-light);
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: var(--shadow-sm);
-  transition: box-shadow 0.2s, transform 0.2s;
   display: flex;
   flex-direction: column;
 }
@@ -112,44 +84,26 @@ body {
   margin-top: 16px;
 }
 
-.btn {
-  border: 0;
-  border-radius: 8px;
-  padding: 10px 18px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
+/* Remove duplicate button styles - now in global.css */
 
-.btn--primary {
-  background: var(--txt);
-  color: var(--white);
-}
-
-.btn--primary:hover {
-  background: var(--hover-gray);
-}
-
-.btn--ghost {
-  background: transparent;
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 4rem 2rem;
   color: var(--txt-muted);
-  border: 1px solid var(--border);
 }
 
-.btn--ghost:hover {
-  background: var(--bg-gray);
-  border-color: var(--input-placeholder);
+.empty-state-title {
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+
+.empty-state-message {
+  font-size: 14px;
 }
 
 /* Responsive design */
 @media (max-width: 900px) {
-  .sidebar {
-    display: none;
-  }
-  .main-content {
-    margin-left: 0;
-  }
   .grid-wrapper {
     padding: 24px 16px 48px;
   }

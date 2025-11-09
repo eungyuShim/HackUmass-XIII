@@ -87,6 +87,65 @@
   height: 20px;
 }
 
+.link {
+  color: var(--txt);
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.link:hover {
+  color: var(--accent);
+}
+
+.hint {
+  margin-top: 12px;
+  font-size: 12px;
+  color: #4b5563;         
+  line-height: 1.5;
+}
+
+.subhint {
+  margin-top: 6px;      
+  font-size: 10px;
+  color: #9ca3af;           
+  line-height: 1.5;
+}
+
+.modal-close-wrapper {
+  text-align: right;
+}
+
+.link-cursor {
+  cursor: pointer;
+}
+
+/* 900px 이하에서 gradient 숨기고 panel 전체 화면으로 */
+@media (max-width: 900px) {
+  .hero {
+    grid-template-columns: 1fr;
+  }
+  .hero-gradient {
+    display: none;
+  }
+  .panel {
+    width: 100%;
+    max-width: 100%;
+    padding: 60px 40px;
+  }
+}
+
+/* 작은 모바일 화면 대응 */
+@media (max-width: 480px) {
+  .panel {
+    padding: 48px 24px;
+  }
+
+  .panel h1 {
+    font-size: 42px;
+  }
+}
+
 .steps {
   list-style: none;
   margin: 24px 0;
@@ -126,21 +185,7 @@
   padding-top: 4px;
 }
 
-.modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  backdrop-filter: blur(8px);
-  z-index: 1000;
-}
-
-.modal[aria-hidden="false"] {
-  display: flex;
-}
+/* Modal styles are now in global.css */
 
 .card {
   background: var(--bg-card);
@@ -158,32 +203,17 @@
   margin-top: 0;
 }
 
-.btn {
-  border: 0;
-  border-radius: 8px;
-  padding: 12px 24px;
-  /* 버튼 폰트 크기 고정 */
+/* Remove duplicate button styles - now in global.css */
+
+/* Auth page specific input styles */
+.input {
+  width: 100%;
+  height: 52px;
+  padding: 0 96px 0 20px;
   font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all .2s;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
 }
 
-.btn--outline {
-  background: transparent;
-  color: var(--txt);
-  border: 2px solid var(--txt);
-}
-
-.btn--outline:hover {
-  background: var(--txt);
-  color: var(--white);
-}
-
-.link {
+.icon-btn {
   color: var(--txt);
   text-decoration: underline;
   cursor: pointer;
@@ -208,6 +238,13 @@
   line-height: 1.5;
 }
 
+.modal-close-wrapper {
+  text-align: right;
+}
+
+.link-cursor {
+  cursor: pointer;
+}
 
 /* 900px 이하에서 gradient 숨기고 panel 전체 화면으로 */
 @media (max-width: 900px) {

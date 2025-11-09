@@ -1,8 +1,27 @@
 /* setup.css - Setup Modal Styles */
 
+/* Remove duplicate modal and button styles - now in global.css */
+
 .setup-step {
   display: flex;
   flex-direction: column;
+}
+
+/* Setup specific modal styles */
+.modal-content {
+  max-width: 700px;
+  max-height: 90vh;
+  overflow-y: auto;
+  /* 스크롤바를 padding 영역에 표시하여 border-radius 유지 */
+  overflow-y: overlay;
+}
+
+/* Firefox용 fallback */
+@supports not (overflow-y: overlay) {
+  .modal-content {
+    overflow-y: auto;
+    padding-right: 30px;
+  }
 }
 
 .modal-overlay {
@@ -18,26 +37,7 @@
   z-index: 1000;
 }
 
-.modal-content {
-  background: var(--white);
-  border-radius: 16px;
-  padding: 36px;
-  max-width: 700px;
-  width: 90%;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-  /* 스크롤바를 padding 영역에 표시하여 border-radius 유지 */
-  overflow-y: overlay;
-}
-
-/* Firefox용 fallback */
-@supports not (overflow-y: overlay) {
-  .modal-content {
-    overflow-y: auto;
-    padding-right: 30px;
-  }
-}
+/* Remove duplicate modal-content - specific overrides only */
 
 .setup-modal {
   max-width: 700px;
@@ -306,20 +306,7 @@
   font-weight: 500;
 }
 
-/* Button Styles */
-.btn {
-  border: 0;
-  border-radius: 8px;
-  padding: 11px 22px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all .2s;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
+/* Setup specific button styles */
 .btn-primary,
 .btn--primary {
   background: var(--accent);
@@ -355,61 +342,6 @@
   border-color: var(--accent);
   transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
-}
-
-.btn--ghost {
-  background: transparent;
-  color: var(--txt-muted);
-  border: 1px solid var(--border);
-}
-
-.btn--ghost:hover {
-  background: var(--bg-gray);
-  color: var(--txt);
-}
-
-/* Icon buttons */
-.btn-icon {
-  background: transparent;
-  border: none;
-  padding: 8px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 36px;
-  min-height: 36px;
-  border-radius: 6px;
-  transition: all 0.2s;
-  cursor: pointer;
-}
-
-.btn-icon:hover {
-  background: var(--bg-gray);
-}
-
-.btn-icon--danger:hover {
-  background: #fee;
-}
-
-.btn-icon--danger:hover .btn-icon-img {
-  filter: invert(21%) sepia(93%) saturate(4891%) hue-rotate(349deg) brightness(93%) contrast(93%);
-}
-
-.btn-icon-img {
-  width: 20px;
-  height: 20px;
-  display: block;
-  filter: grayscale(100%) brightness(0.6);
-  transition: all 0.2s;
-}
-
-.btn-icon:hover .btn-icon-img {
-  filter: grayscale(0%) brightness(1);
-}
-
-.btn-small {
-  padding: 7px 14px;
-  font-size: 12px;
 }
 
 .btn-block {
