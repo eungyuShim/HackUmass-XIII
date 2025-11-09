@@ -86,9 +86,17 @@ export default function DashboardPage() {
                       assignment
                     ); // Debug log
 
+                    // Convert score to percentage (score/maxScore * 100) with 1 decimal place
+                    let scorePercentage = null;
+                    if (assignment.graded && assignment.points > 0) {
+                      scorePercentage = parseFloat(
+                        ((assignment.earned / assignment.points) * 100).toFixed(1)
+                      );
+                    }
+
                     return {
                       name: assignment.name,
-                      score: assignment.graded ? assignment.earned : null,
+                      score: scorePercentage,
                       maxScore: assignment.points || 0,
                       dueDate: assignment.dueDate,
                       submitted: assignment.submitted || false,
