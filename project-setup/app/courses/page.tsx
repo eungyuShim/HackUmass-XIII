@@ -1,10 +1,9 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { Sidebar } from "@/components/shared/Sidebar";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import '@/components/shared/global.css';
+import '@/components/courses/course.css';
 
 interface Course {
   id: string;
@@ -13,63 +12,83 @@ interface Course {
 }
 
 export default function CoursesPage() {
-  const router = useRouter();
   const [hasToken, setHasToken] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
-    const tokenPresent = sessionStorage.getItem("canvas_token_present") === "1";
-    setHasToken(tokenPresent);
+    if (typeof window !== 'undefined') {
+      const tokenPresent = sessionStorage.getItem('canvas_token_present') === '1';
+      setHasToken(tokenPresent);
+    }
   }, []);
 
-  // Demo courses
   const courses: Course[] = [
-    { id: "C-160", name: "MICROBIO 160", term: "Fall 2025" },
-    { id: "C-514", name: "CS 514 — Algorithms", term: "Fall 2025" },
+    { id: 'C-160', name: 'MICROBIO 160', term: 'Fall 2025' },
+    { id: 'C-514', name: 'CS 514 — Algorithms', term: 'Fall 2025' },
   ];
 
   const handleViewCourse = (course: Course) => {
-    sessionStorage.setItem("current_course_id", course.id);
-    sessionStorage.setItem("current_course_name", course.name);
-    router.push(`/courses/${course.id}/dashboard`);
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('current_course_id', course.id);
+      sessionStorage.setItem('current_course_name', course.name);
+      router.push('/dashboard');
+    }
   };
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar />
+    <div className="layout">
+      {/* Sidebar */}
+      <aside className="sidebar">
+        <div className="sidebar-header">
+          <h1>Grade<br/>Planner</h1>
+          <p>Academic planning made easy</p>
+        </div>
+        <nav>
+          <ul className="nav-list">
+            <li className="nav-item">
+              <a href="/courses" className="nav-link active">
+                My Courses
+              </a>
+            </li>
+            <li className="nav-item">
+              <a href="/dashboard" className="nav-link">
+                Dashboard
+              </a>
+            </li>
+            <li className="nav-item">
+              <a href="#" className="nav-link">
+                Settings
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </aside>
 
-      <main className="flex-1 bg-[var(--bg-left)] overflow-y-auto lg:ml-[260px] p-8">
-        <header className="mb-8">
-          <h2 className="text-[32px] font-bold mb-2">My Courses</h2>
-          <div className="text-[15px] text-[var(--txt-muted)] mb-2">
-            Select a course to get started
-          </div>
-          <div className="inline-block px-4 py-1.5 bg-[var(--bg-gray-alt)] rounded-full text-[13px] font-semibold text-[var(--txt-muted)] mt-2">
-            {hasToken ? "✓ Token detected" : "Demo mode (no token)"}
+      {/* Main Content */}
+      <main className="main-content">
+        <header className="header">
+          <h2>My Courses</h2>
+          <div className="header-subtitle">Select a course to get started</div>
+          <div className="pill" id="tok">
+            {hasToken ? '✓ Token detected' : 'Demo mode (no token)'}
           </div>
         </header>
 
-        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-12">
+        <section className="grid" id="list">
           {courses.map((course) => (
-            <Card
-              key={course.id}
-              className="p-6 bg-white border border-[var(--border-light)] rounded-xl shadow-[var(--shadow-sm)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.15)] hover:-translate-y-0.5 transition-all duration-200 flex flex-col"
-            >
-              <h3 className="text-xl font-bold mb-2">{course.name}</h3>
-              <div className="text-sm text-[var(--txt-muted)] mb-3">
-                {course.term}
-              </div>
-              <div className="inline-block px-3 py-1 bg-[var(--bg-gray-alt)] rounded-full text-xs font-semibold text-[var(--txt-muted)] w-fit my-3">
-                Course ID: {course.id}
-              </div>
-              <div className="mt-auto pt-4">
-                <Button
+            <div key={course.id} className="card">
+              <h3>{course.name}</h3>
+              <div className="card-term">{course.term}</div>
+              <div className="card-pill">Course ID: {course.id}</div>
+              <div className="row">
+                <button
+                  className="btn btn--primary"
                   onClick={() => handleViewCourse(course)}
-                  className="w-full bg-[var(--txt)] hover:bg-[var(--hover-gray)] text-white"
                 >
                   View Course
-                </Button>
+                </button>
               </div>
-            </Card>
+            </div>
           ))}
         </section>
       </main>

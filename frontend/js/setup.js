@@ -68,14 +68,14 @@
       
       // Weight badge
       const weightBadge = el('div', {class: 'setup-weight-badge'}, [
-        document.createTextNode('Weight: '),
         el('input', {
-          type: 'text',
-          value: String(cat.weight),
-          'data-setup-id': String(cat.id),
-          'data-field': 'weight',
-          class: 'setup-input-weight',
-          placeholder: '0'
+            type: 'number',
+            value: String(cat.weight),
+            min: '0',
+            max: '100',
+            'data-setup-id': String(cat.id),
+            'data-field': 'weight',
+            class: 'setup-input-weight'
         }),
         document.createTextNode('%')
       ]);
