@@ -1,7 +1,7 @@
 // GradeStrategy.tsx - Grade Strategy with sliders and projected grade
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useCategoryStore } from '@/app/stores/useCategoryStore';
 import { useProgressStore } from '@/app/stores/useProgressStore';
@@ -16,6 +16,12 @@ export default function GradeStrategy() {
   const updateSlider = useProgressStore((state) => state.updateSlider);
   const togglePin = useProgressStore((state) => state.togglePin);
   const calculateProjectedGrade = useProgressStore((state) => state.calculateProjectedGrade);
+  
+  // Local state for text input values
+  const [inputValues, setInputValues] = useState<{ [key: number]: string }>({});
+  
+  // Track which input is currently being edited
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
   
   // Update ungraded items when categories change
   useEffect(() => {
@@ -32,10 +38,63 @@ export default function GradeStrategy() {
     calculateProjectedGrade(categories);
   }, [ungradedItems, categories, calculateProjectedGrade]);
   
+  // Update local input values when ungradedItems change
+  useEffect(() => {
+    const newInputValues: { [key: number]: string } = {};
+    ungradedItems.forEach((item, index) => {
+      // Don't update the input that's currently being edited (user is typing)
+      // Always update pinned items and non-editing items
+      if (editingIndex !== index) {
+        newInputValues[index] = item.assumedScore.toFixed(1);
+      }
+    });
+    if (Object.keys(newInputValues).length > 0) {
+      setInputValues((prev) => ({ ...prev, ...newInputValues }));
+    }
+  }, [ungradedItems, editingIndex]);
+  
   const handleSliderChange = (index: number, value: number) => {
     updateSlider(index, value);
-    // Recalculate projected grade after slider change
     calculateProjectedGrade(categories);
+    
+    // Sync input value with the actual result after redistribution
+    // Use a timeout to ensure state has been updated
+    setTimeout(() => {
+      const item = ungradedItems[index];
+      if (item) {
+        setInputValues((prev) => ({ ...prev, [index]: item.assumedScore.toFixed(1) }));
+      }
+    }, 10);
+  };
+  
+  const handleInputChange = (index: number, value: string) => {
+    // Mark this input as being edited
+    setEditingIndex(index);
+    // Allow typing any value temporarily
+    setInputValues((prev) => ({ ...prev, [index]: value }));
+  };
+  
+  const handleInputBlur = (index: number) => {
+    // Clear editing state
+    setEditingIndex(null);
+    
+    const value = parseFloat(inputValues[index]);
+    const item = ungradedItems[index];
+    
+    if (isNaN(value) || !item) {
+      // Reset to current value if invalid
+      setInputValues((prev) => ({ ...prev, [index]: item?.assumedScore.toFixed(1) ?? '0.0' }));
+    } else {
+      // Clamp and update - handleSliderChange will sync the actual value
+      const clampedValue = Math.max(0, Math.min(100, value));
+      handleSliderChange(index, clampedValue);
+    }
+  };
+  
+  const handleInputKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      (e.target as HTMLInputElement).blur();
+    }
   };
   
   const handlePinToggle = (index: number) => {
@@ -109,13 +168,12 @@ export default function GradeStrategy() {
                     </button>
                   </div>
                   <input
-                    type="number"
+                    type="text"
                     className="slider-value-input"
-                    min="0"
-                    max="100"
-                    step="0.1"
-                    value={item.assumedScore}
-                    onChange={(e) => handleSliderChange(index, parseFloat(e.target.value) || 0)}
+                    value={inputValues[index] ?? item.assumedScore.toFixed(1)}
+                    onChange={(e) => handleInputChange(index, e.target.value)}
+                    onBlur={() => handleInputBlur(index)}
+                    onKeyDown={(e) => handleInputKeyDown(index, e)}
                     disabled={item.isPinned}
                   />
                 </div>

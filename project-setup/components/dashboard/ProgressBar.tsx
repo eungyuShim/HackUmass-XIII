@@ -1,10 +1,11 @@
 // ProgressBar.tsx - 현재 점수 및 진행도 표시
 'use client';
 
+import { useEffect } from 'react';
 import Image from 'next/image';
 import { useCategoryStore } from '@/app/stores/useCategoryStore';
 import { useProgressStore } from '@/app/stores/useProgressStore';
-import { GRADE_MAP, GRADE_OPTIONS } from '@/app/types/dashboard';
+import { GRADE_MAP, GRADE_OPTIONS, TargetGrade } from '@/app/types/dashboard';
 
 export default function ProgressBar() {
   // Subscribe to categories to trigger re-render when they change
@@ -12,9 +13,33 @@ export default function ProgressBar() {
   const calcProgressStats = useCategoryStore((state) => state.calcProgressStats);
   const currentTargetGrade = useProgressStore((state) => state.currentTargetGrade);
   const setTargetGrade = useProgressStore((state) => state.setTargetGrade);
+  const maxPossibleGrade = useProgressStore((state) => state.maxPossibleGrade);
+  const calculateMaxPossibleGrade = useProgressStore((state) => state.calculateMaxPossibleGrade);
   
   // Recalculate stats whenever categories change
   const stats = calcProgressStats();
+  
+  // Calculate max possible grade
+  useEffect(() => {
+    calculateMaxPossibleGrade(categories);
+  }, [categories, calculateMaxPossibleGrade]);
+  
+  // Set initial target grade to highest achievable grade
+  useEffect(() => {
+    if (categories.length > 0) {
+      const maxGrade = calculateMaxPossibleGrade(categories);
+      
+      // Find the highest achievable grade
+      const achievableGrade = GRADE_OPTIONS.find((grade) => {
+        const threshold = GRADE_MAP[grade as TargetGrade];
+        return maxGrade >= threshold;
+      });
+      
+      if (achievableGrade && achievableGrade !== currentTargetGrade) {
+        setTargetGrade(achievableGrade as TargetGrade);
+      }
+    }
+  }, [categories.length]); // Only run when categories are first loaded
   
   const maxPercentage = Math.min(100, Math.max(0, stats.maxPct));
   const targetThreshold = GRADE_MAP[currentTargetGrade];
@@ -22,6 +47,12 @@ export default function ProgressBar() {
   
   const handleGradeClick = (grade: string) => {
     setTargetGrade(grade as any);
+  };
+  
+  // Check if a grade is achievable
+  const isGradeAchievable = (grade: string): boolean => {
+    const threshold = GRADE_MAP[grade as TargetGrade];
+    return maxPossibleGrade >= threshold;
   };
   
   return (
@@ -70,16 +101,21 @@ export default function ProgressBar() {
       {/* Grade Selection Buttons */}
       <div className="grade-select-hint">Select a target letter grade to see required strategy:</div>
       <div className="grade-options" id="gradeOptions">
-        {GRADE_OPTIONS.map((grade) => (
-          <button
-            key={grade}
-            className={`grade-btn ${currentTargetGrade === grade ? 'active' : ''}`}
-            data-grade={grade}
-            onClick={() => handleGradeClick(grade)}
-          >
-            {grade}
-          </button>
-        ))}
+        {GRADE_OPTIONS.map((grade) => {
+          const achievable = isGradeAchievable(grade);
+          return (
+            <button
+              key={grade}
+              className={`grade-btn ${currentTargetGrade === grade ? 'active' : ''} ${!achievable ? 'disabled' : ''}`}
+              data-grade={grade}
+              onClick={() => achievable && handleGradeClick(grade)}
+              disabled={!achievable}
+              title={!achievable ? `Cannot achieve ${grade} (Max: ${maxPossibleGrade.toFixed(1)}%)` : ''}
+            >
+              {grade}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

@@ -9,6 +9,7 @@ interface ProgressStore {
   ungradedItems: UngradedItem[];
   totalDeductiblePoints: number;
   projectedGrade: number;
+  maxPossibleGrade: number;
   
   // Actions
   setTargetGrade: (grade: TargetGrade) => void;
@@ -18,6 +19,7 @@ interface ProgressStore {
   redistributeDeductions: (excludeIdx: number, needToFree: number) => boolean;
   togglePin: (index: number) => void;
   calculateProjectedGrade: (categories: any[]) => number;
+  calculateMaxPossibleGrade: (categories: any[]) => number;
 }
 
 export const useProgressStore = create<ProgressStore>()((set, get) => ({
@@ -25,6 +27,7 @@ export const useProgressStore = create<ProgressStore>()((set, get) => ({
   ungradedItems: [],
   totalDeductiblePoints: 0,
   projectedGrade: 0,
+  maxPossibleGrade: 0,
   
   setTargetGrade: (grade: TargetGrade) => {
     set({ currentTargetGrade: grade });
@@ -260,11 +263,14 @@ export const useProgressStore = create<ProgressStore>()((set, get) => ({
         const canReduce = item.deductedPoints;
         const actualReduction = Math.min(canReduce, targetReduction, remaining);
         
-        updatedItems[idx] = {
-          ...item,
-          deductedPoints: item.deductedPoints - actualReduction,
-        };
-        remaining -= actualReduction;
+        // Only update if not pinned
+        if (!updatedItems[idx].isPinned) {
+          updatedItems[idx] = {
+            ...item,
+            deductedPoints: item.deductedPoints - actualReduction,
+          };
+          remaining -= actualReduction;
+        }
       }
     }
     
@@ -276,23 +282,28 @@ export const useProgressStore = create<ProgressStore>()((set, get) => ({
         const canReduce = updatedItems[idx].deductedPoints;
         if (canReduce <= 0) continue;
         
-        const reduction = Math.min(canReduce, remaining);
-        updatedItems[idx] = {
-          ...updatedItems[idx],
-          deductedPoints: updatedItems[idx].deductedPoints - reduction,
-        };
-        remaining -= reduction;
+        // Only update if not pinned
+        if (!updatedItems[idx].isPinned) {
+          const reduction = Math.min(canReduce, remaining);
+          updatedItems[idx] = {
+            ...updatedItems[idx],
+            deductedPoints: updatedItems[idx].deductedPoints - reduction,
+          };
+          remaining -= reduction;
+        }
       }
     }
     
-    // Update scores
+    // Update scores only for non-pinned items
     for (const { idx } of adjustableItems) {
       const item = updatedItems[idx];
-      const scoreReduction = (item.deductedPoints * 100) / item.itemWeight;
-      updatedItems[idx] = {
-        ...item,
-        assumedScore: parseFloat(Math.max(0, Math.min(100, 100 - scoreReduction)).toFixed(1)),
-      };
+      if (!item.isPinned) {
+        const scoreReduction = (item.deductedPoints * 100) / item.itemWeight;
+        updatedItems[idx] = {
+          ...item,
+          assumedScore: parseFloat(Math.max(0, Math.min(100, 100 - scoreReduction)).toFixed(1)),
+        };
+      }
     }
     
     set({ ungradedItems: updatedItems });
@@ -339,5 +350,35 @@ export const useProgressStore = create<ProgressStore>()((set, get) => ({
     const projected = parseFloat(total.toFixed(2));
     set({ projectedGrade: projected });
     return projected;
+  },
+  
+  calculateMaxPossibleGrade: (categories: any[]): number => {
+    let total = 0;
+    
+    categories.forEach((cat) => {
+      const items = cat.items;
+      const totalItemsInCategory = items.length;
+      if (totalItemsInCategory === 0) return;
+      
+      const itemWeight = cat.weight / totalItemsInCategory;
+      
+      items.forEach((item: any) => {
+        let itemScore = 0;
+        
+        if (item.score !== null && item.score !== undefined && item.score !== '') {
+          // Use actual score for graded items
+          itemScore = item.score;
+        } else {
+          // Assume 100% for ungraded items
+          itemScore = 100;
+        }
+        
+        total += (itemWeight / 100) * itemScore;
+      });
+    });
+    
+    const maxPossible = parseFloat(total.toFixed(2));
+    set({ maxPossibleGrade: maxPossible });
+    return maxPossible;
   },
 }));
