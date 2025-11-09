@@ -22,8 +22,7 @@ export default function SetupModal({ isOpen, onClose }: SetupModalProps) {
   const getTotalWeight = useSetupStore((state) => state.getTotalWeight);
   const reset = useSetupStore((state) => state.reset);
   
-  const setCategoryStore = useCategoryStore((state) => state.categories);
-  const setCategories = useCategoryStore((state) => state.reset);
+  const setCategories = useCategoryStore((state) => state.setCategories);
   const bumpId = useCategoryStore((state) => state.bumpId);
   
   if (!isOpen) return null;
@@ -64,39 +63,40 @@ export default function SetupModal({ isOpen, onClose }: SetupModalProps) {
       return;
     }
     
-    // Save setup to sessionStorage
-    if (typeof window !== 'undefined') {
-      sessionStorage.setItem('course_setup', JSON.stringify(setupCategories));
-    }
-    
     // Convert setup categories to dashboard categories
     const newCategories = setupCategories.map((setupCat, index) => {
       const items = Array.from({ length: setupCat.count }, (_, i) => ({
         name: `${setupCat.name} ${i + 1}`,
         score: null,
-        editingName: false,
-        editingScore: false,
+        _editingName: false,
+        _editingScore: false,
       }));
       
       return {
-        id: index + 1,
+        id: setupCat.id,
         name: setupCat.name,
         weight: setupCat.weight,
         items,
-        showItems: false,
-        editingName: false,
-        editingWeight: false,
+        _open: false,
+        _editingName: false,
+        _editingWeight: false,
       };
     });
     
-    // Reset category store and set new categories
-    setCategories();
+    // Set the categories in the category store
+    setCategories(newCategories);
     
-    // Update with new categories (this would need to be added to useCategoryStore)
-    // For now, we'll close and let the user manually add
+    // Update nextCategoryId to be one more than the highest ID
+    const maxId = Math.max(...setupCategories.map(cat => cat.id), 0);
+    for (let i = 0; i <= maxId; i++) {
+      bumpId();
+    }
     
+    // Reset setup store
+    reset();
+    
+    // Close modal
     handleClose();
-    alert('Settings applied successfully!');
   };
   
   const totalWeight = getTotalWeight();

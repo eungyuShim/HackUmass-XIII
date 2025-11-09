@@ -212,7 +212,7 @@
 .setup-input-name:focus {
   outline: none;
   background: var(--white);
-  box-shadow: 0 0 0 2px var(--accent-light);
+  box-shadow: none;
 }
 
 .setup-category-count {
@@ -237,7 +237,7 @@
 .setup-input-count:focus {
   outline: none;
   background: var(--bg-gray);
-  box-shadow: 0 0 0 2px var(--accent-light);
+  box-shadow: none;
 }
 
 .setup-category-actions {
@@ -271,7 +271,7 @@
 .setup-input-weight:focus {
   outline: none;
   background: var(--bg-gray);
-  box-shadow: 0 0 0 2px var(--accent-light);
+  box-shadow: none;
 }
 
 .setup-total-weight {
