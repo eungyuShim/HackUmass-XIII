@@ -4,7 +4,7 @@ import {
   CanvasAssignmentGroup,
   CanvasApiError,
   CanvasPaginationInfo,
-} from './types';
+} from "./types";
 
 /**
  * Canvas API Client
@@ -16,7 +16,7 @@ export class CanvasApiClient {
 
   constructor(baseUrl: string, token: string) {
     // Remove trailing slash if present
-    this.baseUrl = baseUrl.replace(/\/$/, '');
+    this.baseUrl = baseUrl.replace(/\/$/, "");
     this.token = token;
   }
 
@@ -28,10 +28,10 @@ export class CanvasApiClient {
     options: RequestInit = {}
   ): Promise<{ data: T; pagination?: CanvasPaginationInfo }> {
     const url = `${this.baseUrl}${endpoint}`;
-    
+
     const headers = new Headers(options.headers);
-    headers.set('Authorization', `Bearer ${this.token}`);
-    headers.set('Content-Type', 'application/json');
+    headers.set("Authorization", `Bearer ${this.token}`);
+    headers.set("Content-Type", "application/json");
 
     try {
       const response = await fetch(url, {
@@ -40,7 +40,7 @@ export class CanvasApiClient {
       });
 
       // Parse Link header for pagination
-      const pagination = this.parseLinkHeader(response.headers.get('Link'));
+      const pagination = this.parseLinkHeader(response.headers.get("Link"));
 
       if (!response.ok) {
         const errorData: CanvasApiError = await response.json().catch(() => ({
@@ -49,9 +49,9 @@ export class CanvasApiClient {
         }));
 
         throw new Error(
-          errorData.errors?.[0]?.message || 
-          errorData.message || 
-          `Canvas API Error: ${response.status}`
+          errorData.errors?.[0]?.message ||
+            errorData.message ||
+            `Canvas API Error: ${response.status}`
         );
       }
 
@@ -61,27 +61,35 @@ export class CanvasApiClient {
       if (error instanceof Error) {
         throw error;
       }
-      throw new Error('Unknown error occurred while fetching from Canvas API');
+      throw new Error("Unknown error occurred while fetching from Canvas API");
     }
   }
 
   /**
    * Parse Link header for pagination info
    */
-  private parseLinkHeader(linkHeader: string | null): CanvasPaginationInfo | undefined {
+  private parseLinkHeader(
+    linkHeader: string | null
+  ): CanvasPaginationInfo | undefined {
     if (!linkHeader) return undefined;
 
-    const links: CanvasPaginationInfo = { current: '' };
-    const parts = linkHeader.split(',');
+    const links: CanvasPaginationInfo = { current: "" };
+    const parts = linkHeader.split(",");
 
-    parts.forEach(part => {
-      const section = part.split(';');
+    parts.forEach((part) => {
+      const section = part.split(";");
       if (section.length !== 2) return;
 
-      const url = section[0].replace(/<(.*)>/, '$1').trim();
-      const name = section[1].replace(/rel="(.*)"/, '$1').trim();
+      const url = section[0].replace(/<(.*)>/, "$1").trim();
+      const name = section[1].replace(/rel="(.*)"/, "$1").trim();
 
-      if (name === 'current' || name === 'next' || name === 'prev' || name === 'first' || name === 'last') {
+      if (
+        name === "current" ||
+        name === "next" ||
+        name === "prev" ||
+        name === "first" ||
+        name === "last"
+      ) {
         links[name] = url;
       }
     });
@@ -94,7 +102,7 @@ export class CanvasApiClient {
    */
   async getCourses(): Promise<CanvasCourse[]> {
     const { data } = await this.request<CanvasCourse[]>(
-      '/courses?enrollment_state=active&include[]=total_students&include[]=term'
+      "/courses?enrollment_state=active&include[]=total_students&include[]=term"
     );
     return data;
   }
@@ -112,7 +120,9 @@ export class CanvasApiClient {
   /**
    * Get assignment groups for a course
    */
-  async getAssignmentGroups(courseId: number): Promise<CanvasAssignmentGroup[]> {
+  async getAssignmentGroups(
+    courseId: number
+  ): Promise<CanvasAssignmentGroup[]> {
     const { data } = await this.request<CanvasAssignmentGroup[]>(
       `/courses/${courseId}/assignment_groups?include[]=assignments&include[]=submission`
     );
@@ -132,7 +142,10 @@ export class CanvasApiClient {
   /**
    * Get a specific assignment
    */
-  async getAssignment(courseId: number, assignmentId: number): Promise<CanvasAssignment> {
+  async getAssignment(
+    courseId: number,
+    assignmentId: number
+  ): Promise<CanvasAssignment> {
     const { data } = await this.request<CanvasAssignment>(
       `/courses/${courseId}/assignments/${assignmentId}?include[]=submission`
     );
@@ -144,7 +157,7 @@ export class CanvasApiClient {
    */
   async verifyToken(): Promise<boolean> {
     try {
-      await this.request('/users/self/profile');
+      await this.request("/users/self/profile");
       return true;
     } catch {
       return false;
@@ -155,7 +168,7 @@ export class CanvasApiClient {
    * Get current user's profile
    */
   async getCurrentUser() {
-    const { data } = await this.request('/users/self/profile');
+    const { data } = await this.request("/users/self/profile");
     return data;
   }
 }
@@ -163,12 +176,15 @@ export class CanvasApiClient {
 /**
  * Create Canvas API client instance
  */
-export function createCanvasClient(baseUrl?: string, token?: string): CanvasApiClient {
+export function createCanvasClient(
+  baseUrl?: string,
+  token?: string
+): CanvasApiClient {
   const apiUrl = baseUrl || process.env.CANVAS_API_URL;
   const apiToken = token || process.env.CANVAS_ACCESS_TOKEN;
 
   if (!apiUrl || !apiToken) {
-    throw new Error('Canvas API URL and token are required');
+    throw new Error("Canvas API URL and token are required");
   }
 
   return new CanvasApiClient(apiUrl, apiToken);

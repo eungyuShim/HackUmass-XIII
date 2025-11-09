@@ -18,20 +18,23 @@ export async function GET(request: NextRequest) {
 
     // Create Canvas API client
     const client = new CanvasApiClient(baseUrl, token);
-    
+
     // Fetch courses
     const canvasCourses = await client.getCourses();
-    
+
     // Map to app format
     const courses = canvasCourses
-      .filter(course => course.workflow_state === 'available')
+      .filter((course) => course.workflow_state === "available")
       .map(mapCanvasCourse);
 
     return NextResponse.json({ courses });
   } catch (error) {
     console.error("Courses fetch error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to fetch courses" },
+      {
+        error:
+          error instanceof Error ? error.message : "Failed to fetch courses",
+      },
       { status: 500 }
     );
   }

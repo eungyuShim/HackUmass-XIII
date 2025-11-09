@@ -11,7 +11,7 @@ export interface CanvasCourse {
   id: number;
   name: string;
   course_code: string;
-  workflow_state: 'available' | 'completed' | 'deleted' | 'unpublished';
+  workflow_state: "available" | "completed" | "deleted" | "unpublished";
   account_id: number;
   start_at?: string | null;
   end_at?: string | null;
@@ -79,7 +79,10 @@ export interface CanvasAssignment {
   intra_group_peer_reviews?: boolean;
   group_category_id?: number | null;
   needs_grading_count?: number;
-  needs_grading_count_by_section?: Array<{ section_id: string; needs_grading_count: number }>;
+  needs_grading_count_by_section?: Array<{
+    section_id: string;
+    needs_grading_count: number;
+  }>;
   position?: number;
   post_to_sis?: boolean;
   integration_id?: string | null;
@@ -87,7 +90,13 @@ export interface CanvasAssignment {
   points_possible?: number;
   submission_types?: string[];
   has_submitted_submissions?: boolean;
-  grading_type?: 'pass_fail' | 'percent' | 'letter_grade' | 'gpa_scale' | 'points' | 'not_graded';
+  grading_type?:
+    | "pass_fail"
+    | "percent"
+    | "letter_grade"
+    | "gpa_scale"
+    | "points"
+    | "not_graded";
   grading_standard_id?: number | null;
   published?: boolean;
   unpublishable?: boolean;
@@ -156,7 +165,7 @@ export interface CanvasSubmission {
   late_policy_status?: string | null;
   points_deducted?: number | null;
   seconds_late?: number;
-  workflow_state: 'submitted' | 'unsubmitted' | 'graded' | 'pending_review';
+  workflow_state: "submitted" | "unsubmitted" | "graded" | "pending_review";
   extra_attempts?: number | null;
   anonymous_id?: string;
   posted_at?: string | null;

@@ -22,15 +22,22 @@ export async function GET(
 
     // Create Canvas API client
     const client = new CanvasApiClient(baseUrl, token);
-    
+
     // Fetch assignment groups
-    const assignmentGroups = await client.getAssignmentGroups(parseInt(courseId));
+    const assignmentGroups = await client.getAssignmentGroups(
+      parseInt(courseId)
+    );
 
     return NextResponse.json({ assignmentGroups });
   } catch (error) {
     console.error("Assignment groups fetch error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to fetch assignment groups" },
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to fetch assignment groups",
+      },
       { status: 500 }
     );
   }

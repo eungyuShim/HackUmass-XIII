@@ -23,12 +23,14 @@ export async function GET(
 
     // Create Canvas API client
     const client = new CanvasApiClient(baseUrl, token);
-    
+
     // Fetch assignment groups (includes assignments)
-    const assignmentGroups = await client.getAssignmentGroups(parseInt(courseId));
-    
+    const assignmentGroups = await client.getAssignmentGroups(
+      parseInt(courseId)
+    );
+
     // Map to app format
-    const categories = assignmentGroups.map(group => 
+    const categories = assignmentGroups.map((group) =>
       mapAssignmentGroup(group, courseId)
     );
 
@@ -36,7 +38,12 @@ export async function GET(
   } catch (error) {
     console.error("Assignments fetch error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to fetch assignments" },
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to fetch assignments",
+      },
       { status: 500 }
     );
   }

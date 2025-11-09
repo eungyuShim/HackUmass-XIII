@@ -8,22 +8,60 @@ import '@/components/courses/course.css';
 interface Course {
   id: string;
   name: string;
+  courseCode: string;
   term: string;
+  color: string;
 }
 
 export default function CoursesPage() {
   const [hasToken, setHasToken] = useState(false);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const router = useRouter();
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const tokenPresent = sessionStorage.getItem('canvas_token_present') === '1';
-      setHasToken(tokenPresent);
-    }
-  }, []);
+    const fetchCourses = async () => {
+      if (typeof window === 'undefined') return;
 
-  // TODO: Fetch courses from Canvas API
-  const courses: Course[] = [];
+      const token = sessionStorage.getItem('canvas_token');
+      const baseUrl = sessionStorage.getItem('canvas_base_url');
+
+      if (!token || !baseUrl) {
+        setHasToken(false);
+        setLoading(false);
+        return;
+      }
+
+      setHasToken(true);
+      setLoading(true);
+      setError('');
+
+      try {
+        const response = await fetch('/api/canvas/courses', {
+          headers: {
+            'x-canvas-token': token,
+            'x-canvas-base-url': baseUrl,
+          },
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to fetch courses');
+        }
+
+        setCourses(data.courses || []);
+      } catch (err) {
+        console.error('Failed to fetch courses:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load courses');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, []);
 
   const handleViewCourse = (course: Course) => {
     if (typeof window !== 'undefined') {
@@ -69,7 +107,33 @@ export default function CoursesPage() {
 
         <div className="grid-wrapper">
           <section className="grid" id="list">
-            {courses.length === 0 ? (
+            {loading ? (
+              <div style={{ 
+                gridColumn: '1 / -1', 
+                textAlign: 'center', 
+                padding: '4rem 2rem',
+                color: 'var(--txt-muted)'
+              }}>
+                <p style={{ fontSize: '18px' }}>Loading courses...</p>
+              </div>
+            ) : error ? (
+              <div style={{ 
+                gridColumn: '1 / -1', 
+                textAlign: 'center', 
+                padding: '4rem 2rem',
+                color: '#ef4444'
+              }}>
+                <p style={{ fontSize: '18px', marginBottom: '8px' }}>Error loading courses</p>
+                <p style={{ fontSize: '14px' }}>{error}</p>
+                <button 
+                  className="btn btn--outline" 
+                  style={{ marginTop: '16px' }}
+                  onClick={() => router.push('/')}
+                >
+                  Back to Login
+                </button>
+              </div>
+            ) : courses.length === 0 ? (
               <div style={{ 
                 gridColumn: '1 / -1', 
                 textAlign: 'center', 
@@ -79,16 +143,36 @@ export default function CoursesPage() {
                 <p style={{ fontSize: '18px', marginBottom: '8px' }}>No courses found</p>
                 <p style={{ fontSize: '14px' }}>
                   {hasToken 
-                    ? 'No courses are available for this account.' 
+                    ? 'No active courses are available for this account.' 
                     : 'Please enter your Canvas access token to view your courses.'}
                 </p>
+                {!hasToken && (
+                  <button 
+                    className="btn btn--primary" 
+                    style={{ marginTop: '16px' }}
+                    onClick={() => router.push('/')}
+                  >
+                    Enter Token
+                  </button>
+                )}
               </div>
             ) : (
               courses.map((course) => (
                 <div key={course.id} className="card">
+                  <div 
+                    style={{ 
+                      width: '4px', 
+                      height: '100%', 
+                      backgroundColor: course.color,
+                      position: 'absolute',
+                      left: 0,
+                      top: 0,
+                      borderRadius: '8px 0 0 8px'
+                    }}
+                  />
                   <h3>{course.name}</h3>
-                  <div className="card-term">{course.term}</div>
-                  <div className="card-pill">Course ID: {course.id}</div>
+                  <div className="card-term">{course.courseCode}</div>
+                  <div className="card-pill">{course.term}</div>
                   <div className="row">
                     <button
                       className="btn btn--primary"
