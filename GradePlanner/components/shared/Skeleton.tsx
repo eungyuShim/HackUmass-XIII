@@ -1,5 +1,7 @@
 "use client";
 
+import "@/components/courses/CourseCard.css";
+
 interface SkeletonProps {
   width?: string | number;
   height?: string | number;
@@ -47,17 +49,20 @@ export default function Skeleton({
 }
 
 // Preset skeleton components
-export function CourseCardSkeleton() {
+export const CourseCardSkeleton = () => {
   return (
-    <div className="course-card" style={{ padding: "20px" }}>
-      <Skeleton width="60px" height="60px" circle />
-      <div style={{ marginTop: "16px" }}>
-        <Skeleton width="80%" height="24px" />
-        <Skeleton width="60%" height="16px" className="mt-2" />
+    <div className="course-card">
+      <div className="course-card__color-bar" style={{ backgroundColor: "#e5e7eb" }} />
+      <div className="course-card__content">
+        <div className="skeleton skeleton--title" style={{ width: "70%" }} />
+        <div className="skeleton skeleton--text" style={{ width: "40%", marginBottom: "12px" }} />
+        <div className="skeleton skeleton--text" style={{ width: "50%", marginBottom: "8px" }} />
+        <div className="skeleton skeleton--text" style={{ width: "45%" }} />
+        <div className="skeleton skeleton--button" style={{ marginTop: "auto" }} />
       </div>
     </div>
   );
-}
+};
 
 export function CategorySkeleton() {
   return (

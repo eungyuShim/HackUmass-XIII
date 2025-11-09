@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { CourseCard } from "@/components/courses/CourseCard";
 import { CourseCardSkeleton } from "@/components/shared/Skeleton";
 import Toast from "@/components/shared/Toast";
 import "@/components/shared/global.css";
@@ -237,40 +238,15 @@ export default function CoursesPage() {
               </div>
             ) : (
               courses.map((course) => (
-                <div
+                <CourseCard
                   key={course.id}
-                  className="card"
-                  style={{ position: "relative" }}
-                >
-                  <div
-                    style={{
-                      width: "4px",
-                      height: "100%",
-                      backgroundColor: course.color,
-                      position: "absolute",
-                      left: 0,
-                      top: 0,
-                      borderRadius: "8px 0 0 8px",
-                    }}
-                  />
-                  <h3>{course.name}</h3>
-                  <div className="card-term">{course.courseCode}</div>
-                  <div className="card-pill">Term: {course.term}</div>
-                  <div
-                    className="card-pill"
-                    style={{ marginTop: "4px", fontSize: "12px", opacity: 0.7 }}
-                  >
-                    Course ID: {course.id}
-                  </div>
-                  <div className="row">
-                    <button
-                      className="btn btn--primary"
-                      onClick={() => handleViewCourse(course)}
-                    >
-                      View Course
-                    </button>
-                  </div>
-                </div>
+                  id={course.id}
+                  name={course.name}
+                  courseCode={course.courseCode}
+                  term={course.term}
+                  color={course.color}
+                  onViewCourse={() => handleViewCourse(course)}
+                />
               ))
             )}
           </section>
