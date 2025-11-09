@@ -1,53 +1,74 @@
 // GradeStrategy.tsx - Grade Strategy with sliders and projected grade
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import Image from 'next/image';
-import { useCategoryStore } from '@/app/stores/useCategoryStore';
-import { useProgressStore } from '@/app/stores/useProgressStore';
-import { AVAILABLE_STRATEGIES, StrategyType } from '@/app/types/strategy';
+import { useEffect, useState, useCallback, useRef } from "react";
+import Image from "next/image";
+import { useCategoryStore } from "@/app/stores/useCategoryStore";
+import { useProgressStore } from "@/app/stores/useProgressStore";
+import { AVAILABLE_STRATEGIES, StrategyType } from "@/app/types/strategy";
 
 export default function GradeStrategy() {
   const categories = useCategoryStore((state) => state.categories);
-  const currentTargetGrade = useProgressStore((state) => state.currentTargetGrade);
+  const currentTargetGrade = useProgressStore(
+    (state) => state.currentTargetGrade
+  );
   const ungradedItems = useProgressStore((state) => state.ungradedItems);
   const projectedGrade = useProgressStore((state) => state.projectedGrade);
   const currentStrategy = useProgressStore((state) => state.currentStrategy);
-  const collectUngradedItems = useProgressStore((state) => state.collectUngradedItems);
-  const calculateTotalDeductiblePoints = useProgressStore((state) => state.calculateTotalDeductiblePoints);
+  const collectUngradedItems = useProgressStore(
+    (state) => state.collectUngradedItems
+  );
+  const calculateTotalDeductiblePoints = useProgressStore(
+    (state) => state.calculateTotalDeductiblePoints
+  );
   const updateSlider = useProgressStore((state) => state.updateSlider);
   const togglePin = useProgressStore((state) => state.togglePin);
-  const calculateProjectedGrade = useProgressStore((state) => state.calculateProjectedGrade);
+  const calculateProjectedGrade = useProgressStore(
+    (state) => state.calculateProjectedGrade
+  );
   const setStrategy = useProgressStore((state) => state.setStrategy);
-  
+
   // Local state for text input values
   const [inputValues, setInputValues] = useState<{ [key: number]: string }>({});
-  
+
   // Track which input is currently being edited
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  
+
+  // Debounce timer ref
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Debounced slider change
+  const debouncedCalculate = useCallback(() => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    debounceTimerRef.current = setTimeout(() => {
+      calculateProjectedGrade(categories);
+    }, 100); // 100ms debounce
+  }, [calculateProjectedGrade, categories]);
+
   // Update ungraded items when categories change
   useEffect(() => {
     collectUngradedItems(categories);
   }, [categories, collectUngradedItems]);
-  
+
   // Recalculate when target grade changes
   useEffect(() => {
     calculateTotalDeductiblePoints(categories);
   }, [currentTargetGrade, categories, calculateTotalDeductiblePoints]);
-  
+
   // Recalculate when strategy changes
   useEffect(() => {
     if (categories.length > 0) {
       calculateTotalDeductiblePoints(categories);
     }
   }, [currentStrategy]);
-  
+
   // Update projected grade when sliders change
   useEffect(() => {
     calculateProjectedGrade(categories);
   }, [ungradedItems, categories, calculateProjectedGrade]);
-  
+
   // Update local input values when ungradedItems change
   useEffect(() => {
     const newInputValues: { [key: number]: string } = {};
@@ -62,107 +83,154 @@ export default function GradeStrategy() {
       setInputValues((prev) => ({ ...prev, ...newInputValues }));
     }
   }, [ungradedItems, editingIndex]);
-  
+
   const handleSliderChange = (index: number, value: number) => {
     updateSlider(index, value);
-    calculateProjectedGrade(categories);
-    
+    debouncedCalculate();
+
     // Sync input value with the actual result after redistribution
     // Use a timeout to ensure state has been updated
     setTimeout(() => {
       const item = ungradedItems[index];
       if (item) {
-        setInputValues((prev) => ({ ...prev, [index]: item.assumedScore.toFixed(1) }));
+        setInputValues((prev) => ({
+          ...prev,
+          [index]: item.assumedScore.toFixed(1),
+        }));
       }
     }, 10);
   };
-  
+
+  const handleResetSliders = () => {
+    // Recalculate all sliders based on current strategy
+    calculateTotalDeductiblePoints(categories);
+    calculateProjectedGrade(categories);
+  };
+
   const handleInputChange = (index: number, value: string) => {
     // Mark this input as being edited
     setEditingIndex(index);
     // Allow typing any value temporarily
     setInputValues((prev) => ({ ...prev, [index]: value }));
   };
-  
+
   const handleInputBlur = (index: number) => {
     // Clear editing state
     setEditingIndex(null);
-    
+
     const value = parseFloat(inputValues[index]);
     const item = ungradedItems[index];
-    
+
     if (isNaN(value) || !item) {
       // Reset to current value if invalid
-      setInputValues((prev) => ({ ...prev, [index]: item?.assumedScore.toFixed(1) ?? '0.0' }));
+      setInputValues((prev) => ({
+        ...prev,
+        [index]: item?.assumedScore.toFixed(1) ?? "0.0",
+      }));
     } else {
       // Clamp and update - handleSliderChange will sync the actual value
       const clampedValue = Math.max(0, Math.min(100, value));
       handleSliderChange(index, clampedValue);
     }
   };
-  
-  const handleInputKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
+
+  const handleInputKeyDown = (
+    index: number,
+    e: React.KeyboardEvent<HTMLInputElement>
+  ) => {
+    if (e.key === "Enter") {
       (e.target as HTMLInputElement).blur();
     }
   };
-  
+
   const handlePinToggle = (index: number) => {
     togglePin(index);
   };
-  
+
   const handleStrategyChange = (strategyType: StrategyType) => {
     setStrategy(strategyType);
   };
-  
+
   const hasUngradedItems = ungradedItems.length > 0;
-  
+
   return (
     <>
       {/* Target Strategy Card */}
       {hasUngradedItems && (
         <div className="card" id="targetStrategy">
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center', 
-            marginBottom: '16px' 
-          }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "16px",
+            }}
+          >
             <h3 id="strategyTitle" style={{ margin: 0 }}>
               Strategy for {currentTargetGrade}
             </h3>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: '13px', color: 'var(--txt-muted)', marginBottom: '2px' }}>
+            <div style={{ textAlign: "right" }}>
+              <div
+                style={{
+                  fontSize: "13px",
+                  color: "var(--txt-muted)",
+                  marginBottom: "2px",
+                }}
+              >
                 Projected Grade
               </div>
-              <div 
-                id="projectedGrade" 
-                style={{ 
-                  fontSize: '24px', 
-                  fontWeight: 700, 
-                  color: 'var(--accent)' 
+              <div
+                id="projectedGrade"
+                style={{
+                  fontSize: "24px",
+                  fontWeight: 700,
+                  color: "var(--accent)",
                 }}
               >
                 {projectedGrade.toFixed(1)}%
               </div>
             </div>
           </div>
-          
+
           {/* Strategy Selection */}
-          <div style={{ marginBottom: '20px' }}>
-            <div style={{ 
-              fontSize: '14px', 
-              color: 'var(--txt-muted)', 
-              marginBottom: '8px',
-              fontWeight: 500
-            }}>
-              Distribution Strategy:
+          <div style={{ marginBottom: "20px" }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "8px",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: "14px",
+                  color: "var(--txt-muted)",
+                  fontWeight: 500,
+                }}
+              >
+                Distribution Strategy:
+              </div>
+              <button
+                className="btn btn-secondary"
+                style={{
+                  padding: "4px 12px",
+                  fontSize: "12px",
+                  height: "auto",
+                }}
+                onClick={handleResetSliders}
+                title="Reset all sliders to strategy defaults"
+              >
+                Reset
+              </button>
             </div>
             <div className="strategy-options">
               {AVAILABLE_STRATEGIES.map((strategy) => (
                 <button
                   key={strategy.id}
-                  className={`strategy-btn ${currentStrategy === strategy.id ? 'active' : ''}`}
+                  className={`strategy-btn ${
+                    currentStrategy === strategy.id ? "active" : ""
+                  }`}
                   onClick={() => handleStrategyChange(strategy.id)}
                   title={strategy.description}
                 >
@@ -171,29 +239,32 @@ export default function GradeStrategy() {
               ))}
             </div>
           </div>
-          
-          <div 
-            id="ungradedItemsList" 
-            style={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              gap: '12px' 
+
+          <div
+            id="ungradedItemsList"
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "12px",
             }}
           >
             {ungradedItems.map((item, index) => (
-              <div key={`${item.categoryId}-${item.itemName}`} className="ungraded-item-slider">
+              <div
+                key={`${item.categoryId}-${item.itemName}`}
+                className="ungraded-item-slider"
+              >
                 <div className="slider-header">
                   <div className="slider-item-info">
                     <div className="slider-item-text">
-                      <div className="slider-item-name">
-                        {item.itemName}
-                      </div>
+                      <div className="slider-item-name">{item.itemName}</div>
                       <div className="slider-item-category">
                         {item.categoryName}
                       </div>
                     </div>
                     <button
-                      className={`pin-btn ${item.isPinned ? 'pin-btn--active' : ''}`}
+                      className={`pin-btn ${
+                        item.isPinned ? "pin-btn--active" : ""
+                      }`}
                       type="button"
                       onClick={() => handlePinToggle(index)}
                     >
@@ -222,7 +293,9 @@ export default function GradeStrategy() {
                   max="100"
                   step="0.1"
                   value={item.assumedScore}
-                  onChange={(e) => handleSliderChange(index, parseFloat(e.target.value))}
+                  onChange={(e) =>
+                    handleSliderChange(index, parseFloat(e.target.value))
+                  }
                   disabled={item.isPinned}
                 />
               </div>
@@ -233,4 +306,3 @@ export default function GradeStrategy() {
     </>
   );
 }
-

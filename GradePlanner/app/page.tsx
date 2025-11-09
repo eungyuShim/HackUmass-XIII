@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Toast from "@/components/shared/Toast";
+import { validateToken } from "@/lib/validation";
 import "@/components/shared/global.css";
 import "@/components/auth/index.css";
 
@@ -14,12 +16,29 @@ export default function HomePage() {
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error" | "info" | "warning";
+  } | null>(null);
   const router = useRouter();
 
   const handleSubmit = async () => {
     const value = token.trim();
     if (!value) {
       setError("Please enter your Canvas access token");
+      setToast({
+        message: "Please enter your Canvas access token",
+        type: "warning",
+      });
+      return;
+    }
+
+    // Validate token format
+    if (!validateToken(value)) {
+      setError(
+        "Invalid token format. Canvas tokens should be in format: {user_id}~{token}"
+      );
+      setToast({ message: "Invalid token format", type: "error" });
       return;
     }
 
@@ -52,17 +71,22 @@ export default function HomePage() {
           sessionStorage.setItem("canvas_base_url", CANVAS_BASE_URL);
           sessionStorage.setItem("canvas_user", JSON.stringify(data.user));
         }
-        router.push("/courses");
+        setToast({ message: `Welcome, ${data.user.name}!`, type: "success" });
+        setTimeout(() => {
+          router.push("/courses");
+        }, 500);
       } else {
         setError("Invalid Canvas token. Please check and try again.");
+        setToast({ message: "Invalid Canvas token", type: "error" });
       }
     } catch (err) {
       console.error("Token verification error:", err);
-      setError(
+      const errorMessage =
         err instanceof Error
           ? err.message
-          : "Failed to verify token. Please try again."
-      );
+          : "Failed to verify token. Please try again.";
+      setError(errorMessage);
+      setToast({ message: errorMessage, type: "error" });
     } finally {
       setLoading(false);
     }
@@ -210,6 +234,15 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Toast Notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </>
   );
 }

@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { CourseCardSkeleton } from "@/components/shared/Skeleton";
+import Toast from "@/components/shared/Toast";
 import "@/components/shared/global.css";
 import "@/components/courses/course.css";
 
@@ -19,6 +21,10 @@ export default function CoursesPage() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error" | "info" | "warning";
+  } | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -53,9 +59,18 @@ export default function CoursesPage() {
         }
 
         setCourses(data.courses || []);
+        if (data.courses && data.courses.length > 0) {
+          setToast({
+            message: `Loaded ${data.courses.length} course(s)`,
+            type: "success",
+          });
+        }
       } catch (err) {
         console.error("Failed to fetch courses:", err);
-        setError(err instanceof Error ? err.message : "Failed to load courses");
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to load courses";
+        setError(errorMessage);
+        setToast({ message: errorMessage, type: "error" });
       } finally {
         setLoading(false);
       }
@@ -65,9 +80,9 @@ export default function CoursesPage() {
   }, []);
 
   const handleLogout = () => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       sessionStorage.clear();
-      router.push('/');
+      router.push("/");
     }
   };
 
@@ -82,7 +97,7 @@ export default function CoursesPage() {
   return (
     <div className="layout">
       {/* Sidebar */}
-      <aside className={`sidebar ${isSidebarOpen ? 'sidebar-open' : ''}`}>
+      <aside className={`sidebar ${isSidebarOpen ? "sidebar-open" : ""}`}>
         <div className="sidebar-header">
           <h1>
             Grade
@@ -90,7 +105,7 @@ export default function CoursesPage() {
             Planner
           </h1>
           <p>Academic planning made easy</p>
-          <button 
+          <button
             className="sidebar-close"
             onClick={() => setIsSidebarOpen(false)}
             aria-label="Close menu"
@@ -106,14 +121,12 @@ export default function CoursesPage() {
               </a>
             </li>
           </ul>
-          
+
           <div className="sidebar-section">
-            <div className="sidebar-section-title">
-              Account
-            </div>
+            <div className="sidebar-section-title">Account</div>
             <ul className="nav-list">
               <li className="nav-item">
-                <button 
+                <button
                   onClick={handleLogout}
                   className="nav-link nav-link-button"
                 >
@@ -127,7 +140,7 @@ export default function CoursesPage() {
 
       {/* Sidebar Overlay for Mobile */}
       {isSidebarOpen && (
-        <div 
+        <div
           className="sidebar-overlay"
           onClick={() => setIsSidebarOpen(false)}
         />
@@ -136,18 +149,27 @@ export default function CoursesPage() {
       {/* Main Content */}
       <main className="main-content">
         <header className="header">
-          <button 
+          <button
             className="mobile-menu-toggle"
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             aria-label="Toggle menu"
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M3 12h18M3 6h18M3 18h18"/>
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path d="M3 12h18M3 6h18M3 18h18" />
             </svg>
           </button>
           <div>
             <h2>My Courses</h2>
-            <div className="header-subtitle">Select a course to get started</div>
+            <div className="header-subtitle">
+              Select a course to get started
+            </div>
           </div>
           <div className="pill" id="tok">
             {hasToken ? "✓ Token detected" : "Demo mode (no token)"}
@@ -157,16 +179,14 @@ export default function CoursesPage() {
         <div className="grid-wrapper">
           <section className="grid" id="list">
             {loading ? (
-              <div
-                style={{
-                  gridColumn: "1 / -1",
-                  textAlign: "center",
-                  padding: "4rem 2rem",
-                  color: "var(--txt-muted)",
-                }}
-              >
-                <p style={{ fontSize: "18px" }}>Loading courses...</p>
-              </div>
+              <>
+                <CourseCardSkeleton />
+                <CourseCardSkeleton />
+                <CourseCardSkeleton />
+                <CourseCardSkeleton />
+                <CourseCardSkeleton />
+                <CourseCardSkeleton />
+              </>
             ) : error ? (
               <div
                 style={{
@@ -256,6 +276,15 @@ export default function CoursesPage() {
           </section>
         </div>
       </main>
+
+      {/* Toast Notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }

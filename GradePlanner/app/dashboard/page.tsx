@@ -8,6 +8,8 @@ import CategoryList from "@/components/dashboard/CategoryList";
 import ProgressBar from "@/components/dashboard/ProgressBar";
 import GradeStrategy from "@/components/dashboard/GradeStrategy";
 import SetupModal from "@/components/setup/SetupModal";
+import Toast from "@/components/shared/Toast";
+import { CategorySkeleton } from "@/components/shared/Skeleton";
 import "@/components/shared/global.css";
 import "@/components/dashboard/dashboard.css";
 import "@/components/setup/setup.css";
@@ -19,6 +21,10 @@ export default function DashboardPage() {
   const [courseId, setCourseId] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error" | "info" | "warning";
+  } | null>(null);
   const isFirstVisit = useFirstVisit();
   const router = useRouter();
   const setCategories = useCategoryStore((state) => state.setCategories);
@@ -90,7 +96,9 @@ export default function DashboardPage() {
                     let scorePercentage = null;
                     if (assignment.graded && assignment.points > 0) {
                       scorePercentage = parseFloat(
-                        ((assignment.earned / assignment.points) * 100).toFixed(1)
+                        ((assignment.earned / assignment.points) * 100).toFixed(
+                          1
+                        )
                       );
                     }
 
@@ -114,14 +122,23 @@ export default function DashboardPage() {
 
           console.log("Formatted categories:", formattedCategories); // Debug log
           setCategories(formattedCategories);
+          setToast({
+            message: "Course data loaded successfully!",
+            type: "success",
+          });
         } else {
           console.log("No categories found in response");
+          setToast({
+            message: "No assignment categories found for this course",
+            type: "warning",
+          });
         }
       } catch (err) {
         console.error("Failed to fetch course data:", err);
-        setError(
-          err instanceof Error ? err.message : "Failed to load course data"
-        );
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to load course data";
+        setError(errorMessage);
+        setToast({ message: errorMessage, type: "error" });
       } finally {
         setLoading(false);
       }
@@ -140,7 +157,7 @@ export default function DashboardPage() {
   return (
     <div className="layout">
       {/* Sidebar */}
-      <aside className={`sidebar ${isSidebarOpen ? 'sidebar-open' : ''}`}>
+      <aside className={`sidebar ${isSidebarOpen ? "sidebar-open" : ""}`}>
         <div className="sidebar-header">
           <h1>
             Grade
@@ -148,7 +165,7 @@ export default function DashboardPage() {
             Planner
           </h1>
           <p>Academic planning made easy</p>
-          <button 
+          <button
             className="sidebar-close"
             onClick={() => setIsSidebarOpen(false)}
             aria-label="Close menu"
@@ -164,14 +181,12 @@ export default function DashboardPage() {
               </a>
             </li>
           </ul>
-          
+
           <div className="sidebar-section">
-            <div className="sidebar-section-title">
-              Course Tools
-            </div>
+            <div className="sidebar-section-title">Course Tools</div>
             <ul className="nav-list">
               <li className="nav-item">
-                <button 
+                <button
                   onClick={() => setIsSetupModalOpen(true)}
                   className="nav-link nav-link-button"
                 >
@@ -180,14 +195,12 @@ export default function DashboardPage() {
               </li>
             </ul>
           </div>
-          
+
           <div className="sidebar-section">
-            <div className="sidebar-section-title">
-              Data
-            </div>
+            <div className="sidebar-section-title">Data</div>
             <ul className="nav-list">
               <li className="nav-item">
-                <button 
+                <button
                   onClick={() => window.location.reload()}
                   className="nav-link nav-link-button"
                 >
@@ -201,7 +214,7 @@ export default function DashboardPage() {
 
       {/* Sidebar Overlay for Mobile */}
       {isSidebarOpen && (
-        <div 
+        <div
           className="sidebar-overlay"
           onClick={() => setIsSidebarOpen(false)}
         />
@@ -210,32 +223,33 @@ export default function DashboardPage() {
       {/* Main Content */}
       <div className="main-content">
         <header className="header">
-          <button 
+          <button
             className="mobile-menu-toggle"
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             aria-label="Toggle menu"
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M3 12h18M3 6h18M3 18h18"/>
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path d="M3 12h18M3 6h18M3 18h18" />
             </svg>
           </button>
           <div>
-            <div className="header-subtitle">
-              Current Course
-            </div>
+            <div className="header-subtitle">Current Course</div>
             <h2 id="course">{courseName || "Loading..."}</h2>
           </div>
         </header>
 
         {loading ? (
-          <div
-            style={{
-              textAlign: "center",
-              padding: "4rem 2rem",
-              color: "var(--txt-muted)",
-            }}
-          >
-            <p style={{ fontSize: "18px" }}>Loading course data...</p>
+          <div style={{ padding: "2rem" }}>
+            <CategorySkeleton />
+            <CategorySkeleton />
+            <CategorySkeleton />
           </div>
         ) : error ? (
           <div
@@ -278,6 +292,15 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+
+      {/* Toast Notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }
