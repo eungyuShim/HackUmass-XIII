@@ -7,6 +7,19 @@ export interface CanvasApiError {
   status?: number;
 }
 
+export interface CanvasUser {
+  id: number;
+  name: string;
+  sortable_name?: string;
+  short_name?: string;
+  login_id?: string;
+  email?: string;
+  avatar_url?: string;
+  locale?: string;
+  effective_locale?: string;
+  time_zone?: string;
+}
+
 export interface CanvasCourse {
   id: number;
   name: string;

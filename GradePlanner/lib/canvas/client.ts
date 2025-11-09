@@ -2,6 +2,7 @@ import {
   CanvasCourse,
   CanvasAssignment,
   CanvasAssignmentGroup,
+  CanvasUser,
   CanvasApiError,
   CanvasPaginationInfo,
 } from "./types";
@@ -167,8 +168,8 @@ export class CanvasApiClient {
   /**
    * Get current user's profile
    */
-  async getCurrentUser() {
-    const { data } = await this.request("/users/self/profile");
+  async getCurrentUser(): Promise<CanvasUser> {
+    const { data } = await this.request<CanvasUser>("/users/self/profile");
     return data;
   }
 }

@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useCategoryStore } from "@/app/stores/useCategoryStore";
 import { useAuthStore } from "@/app/stores/useAuthStore";
-import { useFirstVisit } from "@/hooks/useAppInit";
 import { useCourseAssignments } from "@/hooks/useCanvasApi";
 import { ApiError } from "@/lib/api/client";
 import CategoryList from "@/components/dashboard/CategoryList";
@@ -31,7 +30,6 @@ export default function CourseDashboardPage() {
     type: "success" | "error" | "info" | "warning";
   } | null>(null);
 
-  const isFirstVisit = useFirstVisit();
   const setCategories = useCategoryStore((state) => state.setCategories);
   const { isAuthenticated } = useAuthStore();
 
@@ -150,12 +148,16 @@ export default function CourseDashboardPage() {
     }
   }, [isError, error]);
 
-  // Open setup modal on first visit
+  // Open setup modal on first visit to this course
   useEffect(() => {
-    if (isFirstVisit && !isLoading) {
-      setIsSetupModalOpen(true);
+    if (!isLoading && mounted) {
+      const hasVisited = localStorage.getItem(`course_visited_${courseId}`);
+      if (!hasVisited) {
+        setIsSetupModalOpen(true);
+        localStorage.setItem(`course_visited_${courseId}`, "true");
+      }
     }
-  }, [isFirstVisit, isLoading]);
+  }, [isLoading, mounted, courseId]);
 
   const handleBackToCourses = () => {
     router.push("/courses");
