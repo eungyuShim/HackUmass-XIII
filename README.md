@@ -5,6 +5,11 @@
 [![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Vercel](https://img.shields.io/badge/Vercel-Deployed-black)](https://gradeplanner.vercel.app/)
+
+## 🌐 Live Demo
+
+**Try it now:** [https://gradeplanner.vercel.app/](https://gradeplanner.vercel.app/)
 
 ## ✨ Features
 
@@ -137,7 +142,7 @@ Built with ❤️ at **HackUMass XIII 2025**
 - [Eungyu Shim](https://github.com/eungyuShim)
 - [Jongchan](https://github.com/xxjcpark)
 - [Jooyoung](https://github.com/youngh82)
-
+안
 ## 📞 Support
 
 - 🐛 [Report Bug](https://github.com/eungyuShim/HackUmass-XIII/issues)
