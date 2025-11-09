@@ -20,7 +20,10 @@ export const CourseCard: React.FC<CourseCardProps> = ({
 }) => {
   return (
     <div className="course-card">
-      <div className="course-card__color-bar" style={{ backgroundColor: color }} />
+      <div
+        className="course-card__color-bar"
+        style={{ backgroundColor: color }}
+      />
       <div className="course-card__content">
         <h3 className="course-card__title">{name}</h3>
         <div className="course-card__code">{courseCode}</div>

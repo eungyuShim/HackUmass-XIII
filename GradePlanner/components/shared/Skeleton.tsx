@@ -52,13 +52,25 @@ export default function Skeleton({
 export const CourseCardSkeleton = () => {
   return (
     <div className="course-card">
-      <div className="course-card__color-bar" style={{ backgroundColor: "#e5e7eb" }} />
+      <div
+        className="course-card__color-bar"
+        style={{ backgroundColor: "#e5e7eb" }}
+      />
       <div className="course-card__content">
         <div className="skeleton skeleton--title" style={{ width: "70%" }} />
-        <div className="skeleton skeleton--text" style={{ width: "40%", marginBottom: "12px" }} />
-        <div className="skeleton skeleton--text" style={{ width: "50%", marginBottom: "8px" }} />
+        <div
+          className="skeleton skeleton--text"
+          style={{ width: "40%", marginBottom: "12px" }}
+        />
+        <div
+          className="skeleton skeleton--text"
+          style={{ width: "50%", marginBottom: "8px" }}
+        />
         <div className="skeleton skeleton--text" style={{ width: "45%" }} />
-        <div className="skeleton skeleton--button" style={{ marginTop: "auto" }} />
+        <div
+          className="skeleton skeleton--button"
+          style={{ marginTop: "auto" }}
+        />
       </div>
     </div>
   );

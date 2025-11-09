@@ -5,18 +5,22 @@
 ### 1️⃣ URL 구조 개선 (RESTful 패턴)
 
 #### **Before:**
+
 ```
 / → /courses → /dashboard
 ```
+
 - ❌ `/dashboard`가 어떤 강의인지 URL로 알 수 없음
 - ❌ sessionStorage에만 의존 (브라우저 닫으면 손실)
 - ❌ URL 공유 불가능
 - ❌ 새로고침 시 컨텍스트 손실 가능
 
 #### **After:**
+
 ```
 / → /courses → /courses/[courseId]
 ```
+
 - ✅ RESTful URL 패턴 (`/courses/12345`)
 - ✅ 북마크 가능
 - ✅ URL 공유 가능
@@ -26,6 +30,7 @@
 ### 2️⃣ Zustand Auth Store 구현
 
 #### **Before:**
+
 ```typescript
 // 모든 페이지에서 반복
 const token = sessionStorage.getItem("canvas_token");
@@ -38,11 +43,13 @@ if (!token || !baseUrl) {
 ```
 
 **문제점:**
+
 - 브라우저 탭 닫으면 로그인 정보 손실
 - 코드 중복 (DRY 원칙 위반)
 - 인증 로직이 각 컴포넌트에 분산
 
 #### **After:**
+
 ```typescript
 // 중앙집중식 인증 관리
 const { isAuthenticated, getAuthHeaders, clearAuth } = useAuthStore();
@@ -56,6 +63,7 @@ const headers = getAuthHeaders();
 ```
 
 **장점:**
+
 - ✅ localStorage에 persist (브라우저 닫아도 유지)
 - ✅ 중앙집중식 관리
 - ✅ TypeScript 타입 안전성
@@ -144,6 +152,7 @@ export const useAuthStore = create<AuthStore>()(
 ```
 
 **특징:**
+
 - `persist` 미들웨어로 localStorage 자동 저장
 - `getAuthHeaders()` 헬퍼로 API 헤더 생성
 - TypeScript 타입 안전성 100%
@@ -163,12 +172,7 @@ useEffect(() => {
 
 // 로그인 성공 시
 if (data.valid) {
-  setAuth(
-    value,
-    CANVAS_BASE_URL,
-    data.user.name,
-    data.user.id?.toString()
-  );
+  setAuth(value, CANVAS_BASE_URL, data.user.name, data.user.id?.toString());
   router.push("/courses");
 }
 ```
@@ -223,7 +227,9 @@ useEffect(() => {
 
 // API 호출
 const headers = getAuthHeaders();
-const response = await fetch(`/api/canvas/assignments/${courseId}`, { headers });
+const response = await fetch(`/api/canvas/assignments/${courseId}`, {
+  headers,
+});
 ```
 
 ---
@@ -256,26 +262,28 @@ const response = await fetch(`/api/canvas/assignments/${courseId}`, { headers })
 
 ## 📊 개선 효과 비교
 
-| 항목 | Before | After | 개선 |
-|------|--------|-------|------|
-| **URL 패턴** | `/dashboard` | `/courses/[courseId]` | ✅ RESTful |
-| **URL 공유** | 불가능 | 가능 | ✅ +100% |
-| **새로고침 안정성** | 불안정 | 안정적 | ✅ +100% |
-| **인증 저장소** | sessionStorage | localStorage (Zustand persist) | ✅ 영구 저장 |
-| **코드 중복** | 많음 | 없음 | ✅ -80% |
-| **타입 안전성** | 부분적 | 완전 | ✅ 100% |
-| **브라우저 닫기 후** | 로그인 풀림 | 로그인 유지 | ✅ 지속성 |
+| 항목                 | Before         | After                          | 개선         |
+| -------------------- | -------------- | ------------------------------ | ------------ |
+| **URL 패턴**         | `/dashboard`   | `/courses/[courseId]`          | ✅ RESTful   |
+| **URL 공유**         | 불가능         | 가능                           | ✅ +100%     |
+| **새로고침 안정성**  | 불안정         | 안정적                         | ✅ +100%     |
+| **인증 저장소**      | sessionStorage | localStorage (Zustand persist) | ✅ 영구 저장 |
+| **코드 중복**        | 많음           | 없음                           | ✅ -80%      |
+| **타입 안전성**      | 부분적         | 완전                           | ✅ 100%      |
+| **브라우저 닫기 후** | 로그인 풀림    | 로그인 유지                    | ✅ 지속성    |
 
 ---
 
 ## 🎯 다음 단계 (선택사항)
 
 ### **즉시 적용 가능:**
+
 1. ✅ sessionStorage 제거 (100% Zustand로 이관)
 2. ✅ API Client 통합 (에러 처리 개선)
 3. ✅ SWR 캐싱 (불필요한 API 호출 감소)
 
 ### **향후 고려사항:**
+
 4. 📝 TypeScript 타입 정의 강화
 5. 📝 Rate Limiting 추가
 6. 📝 Unit 테스트 추가

@@ -23,10 +23,10 @@ export function useAuth(redirectTo: string = "/") {
 
 export function useRequireAuth(redirectTo: string = "/") {
   const auth = useAuth(redirectTo);
-  
+
   if (!auth.isAuthenticated) {
     return null;
   }
-  
+
   return auth;
 }

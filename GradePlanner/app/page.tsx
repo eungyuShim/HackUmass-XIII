@@ -81,14 +81,14 @@ export default function HomePage() {
           data.user.name,
           data.user.id?.toString()
         );
-        
+
         // Also keep in sessionStorage for backward compatibility (temporary)
         if (typeof window !== "undefined") {
           sessionStorage.setItem("canvas_token", value);
           sessionStorage.setItem("canvas_base_url", CANVAS_BASE_URL);
           sessionStorage.setItem("canvas_user", JSON.stringify(data.user));
         }
-        
+
         setToast({ message: `Welcome, ${data.user.name}!`, type: "success" });
         setTimeout(() => {
           router.push("/courses");

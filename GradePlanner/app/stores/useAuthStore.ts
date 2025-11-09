@@ -7,7 +7,12 @@ interface AuthStore {
   userName: string | null;
   userId: string | null;
 
-  setAuth: (token: string, baseUrl: string, userName?: string, userId?: string) => void;
+  setAuth: (
+    token: string,
+    baseUrl: string,
+    userName?: string,
+    userId?: string
+  ) => void;
   clearAuth: () => void;
   isAuthenticated: () => boolean;
   getAuthHeaders: () => HeadersInit;
