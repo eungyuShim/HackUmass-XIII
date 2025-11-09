@@ -3,21 +3,26 @@
 
 import { create } from 'zustand';
 import { UngradedItem, TargetGrade, GRADE_MAP } from '@/app/types/dashboard';
+import { StrategyType, getStrategy } from '@/app/types/strategy';
 
 interface ProgressStore {
   currentTargetGrade: TargetGrade;
   ungradedItems: UngradedItem[];
   totalDeductiblePoints: number;
   projectedGrade: number;
+  maxPossibleGrade: number;
+  currentStrategy: StrategyType;
   
   // Actions
   setTargetGrade: (grade: TargetGrade) => void;
+  setStrategy: (strategy: StrategyType) => void;
   collectUngradedItems: (categories: any[]) => void;
   calculateTotalDeductiblePoints: (categories: any[]) => void;
   updateSlider: (index: number, score: number) => void;
   redistributeDeductions: (excludeIdx: number, needToFree: number) => boolean;
   togglePin: (index: number) => void;
   calculateProjectedGrade: (categories: any[]) => number;
+  calculateMaxPossibleGrade: (categories: any[]) => number;
 }
 
 export const useProgressStore = create<ProgressStore>()((set, get) => ({
@@ -25,9 +30,19 @@ export const useProgressStore = create<ProgressStore>()((set, get) => ({
   ungradedItems: [],
   totalDeductiblePoints: 0,
   projectedGrade: 0,
+  maxPossibleGrade: 0,
+  currentStrategy: 'proportional',
   
   setTargetGrade: (grade: TargetGrade) => {
     set({ currentTargetGrade: grade });
+  },
+  
+  setStrategy: (strategyType: StrategyType) => {
+    set({ currentStrategy: strategyType });
+    // Re-calculate with new strategy
+    const { collectUngradedItems } = get();
+    const categories = []; // Will be passed from component
+    // This will be triggered from component side
   },
   
   collectUngradedItems: (categories: any[]) => {
@@ -64,88 +79,40 @@ export const useProgressStore = create<ProgressStore>()((set, get) => ({
   },
   
   calculateTotalDeductiblePoints: (categories: any[]) => {
-    const { currentTargetGrade, ungradedItems } = get();
+    const { currentTargetGrade, ungradedItems, currentStrategy } = get();
     const targetGrade = GRADE_MAP[currentTargetGrade];
     
-    // Calculate stats
-    let minPct = 0;
-    let totalWeight = 0;
+    // Calculate current grade from graded items
+    let currentGrade = 0;
+    let gradedWeight = 0;
     
     categories.forEach((cat) => {
-      totalWeight += cat.weight;
-      const graded = cat.items.filter((item: any) => item.score !== null);
-      if (graded.length > 0) {
-        const avg = graded.reduce((sum: number, item: any) => sum + (item.score || 0), 0) / graded.length;
-        minPct += (cat.weight / 100) * avg;
-      }
+      const items = cat.items;
+      const totalItemsInCategory = items.length;
+      if (totalItemsInCategory === 0) return;
+      
+      const itemWeight = cat.weight / totalItemsInCategory;
+      
+      items.forEach((item: any) => {
+        if (item.score !== null && item.score !== undefined && item.score !== '') {
+          currentGrade += (itemWeight / 100) * item.score;
+          gradedWeight += itemWeight;
+        }
+      });
     });
     
-    const remainingWeight = (100 - totalWeight) / 100;
-    const maxPossible = minPct + remainingWeight * 100;
+    // Calculate remaining weight from ungraded items
+    const ungradedWeight = ungradedItems.reduce((sum, item) => sum + item.itemWeight, 0);
+    
+    // Max possible grade is current grade + all ungraded items at 100%
+    const maxPossible = currentGrade + ungradedWeight;
     const totalDeductiblePoints = maxPossible - targetGrade;
     
-    if (totalDeductiblePoints <= 0) {
-      set({
-        totalDeductiblePoints: 0,
-        ungradedItems: ungradedItems.map((item) => ({
-          ...item,
-          maxDeduction: 0,
-          deductedPoints: 0,
-          assumedScore: 100,
-        })),
-      });
-      return;
-    }
+    // Use selected strategy to calculate initial distribution
+    const strategy = getStrategy(currentStrategy);
+    const calculatedItems = strategy.calculate(ungradedItems, totalDeductiblePoints);
     
-    // Set max deduction for each item
-    const updatedItems = ungradedItems.map((item) => ({
-      ...item,
-      maxDeduction: item.itemWeight,
-    }));
-    
-    const totalMaxDeduction = updatedItems.reduce((sum, item) => sum + item.maxDeduction, 0);
-    
-    if (totalMaxDeduction <= 0) {
-      set({ totalDeductiblePoints, ungradedItems: updatedItems });
-      return;
-    }
-    
-    // Distribute deductions
-    const itemsWithDeductions = updatedItems.map((item) => {
-      const share = item.itemWeight / totalMaxDeduction;
-      const targetDeduction = totalDeductiblePoints * share;
-      const deductedPoints = Math.min(targetDeduction, item.maxDeduction);
-      const scoreReduction = (deductedPoints * 100) / item.itemWeight;
-      const assumedScore = parseFloat(Math.max(0, Math.min(100, 100 - scoreReduction)).toFixed(1));
-      
-      return {
-        ...item,
-        deductedPoints,
-        assumedScore,
-      };
-    });
-    
-    // Scale if needed
-    const actualTotal = itemsWithDeductions.reduce((sum, item) => sum + item.deductedPoints, 0);
-    
-    if (actualTotal > totalDeductiblePoints + 0.01) {
-      const scale = totalDeductiblePoints / actualTotal;
-      const scaledItems = itemsWithDeductions.map((item) => {
-        const scaledDeduction = item.deductedPoints * scale;
-        const scoreReduction = (scaledDeduction * 100) / item.itemWeight;
-        const assumedScore = parseFloat(Math.max(0, Math.min(100, 100 - scoreReduction)).toFixed(1));
-        
-        return {
-          ...item,
-          deductedPoints: scaledDeduction,
-          assumedScore,
-        };
-      });
-      
-      set({ totalDeductiblePoints, ungradedItems: scaledItems });
-    } else {
-      set({ totalDeductiblePoints, ungradedItems: itemsWithDeductions });
-    }
+    set({ totalDeductiblePoints, ungradedItems: calculatedItems });
   },
   
   updateSlider: (index: number, newScore: number) => {
@@ -153,20 +120,25 @@ export const useProgressStore = create<ProgressStore>()((set, get) => ({
     const item = ungradedItems[index];
     if (!item || item.isPinned) return;
     
+    // Clamp the score between 0 and 100
     newScore = Math.max(0, Math.min(100, newScore));
+    
+    // Calculate the new deduction based on the score
     const newDeduction = (item.itemWeight / 100) * (100 - newScore);
     
+    // Check if new deduction exceeds max deduction for this item
     if (newDeduction > item.maxDeduction + 0.01) {
       const updatedItems = [...ungradedItems];
       updatedItems[index] = {
         ...item,
         deductedPoints: item.maxDeduction,
-        assumedScore: 0,
+        assumedScore: 100 - ((item.maxDeduction * 100) / item.itemWeight),
       };
       set({ ungradedItems: updatedItems });
       return;
     }
     
+    // Calculate total deductions from other items
     const otherDeductions = ungradedItems.reduce(
       (sum, itm, idx) => (idx === index ? sum : sum + itm.deductedPoints),
       0
@@ -174,32 +146,51 @@ export const useProgressStore = create<ProgressStore>()((set, get) => ({
     
     const newTotal = newDeduction + otherDeductions;
     
+    // If new total exceeds the allowed deductible points, redistribute
     if (newTotal > totalDeductiblePoints + 0.01) {
       const needToFree = newTotal - totalDeductiblePoints;
+      
+      // First, set the new value for the current item
+      const updatedItems = [...ungradedItems];
+      updatedItems[index] = {
+        ...item,
+        deductedPoints: newDeduction,
+        assumedScore: parseFloat(newScore.toFixed(1)),
+      };
+      set({ ungradedItems: updatedItems });
+      
+      // Then try to redistribute from other sliders
       const redistributed = get().redistributeDeductions(index, needToFree);
       
       if (!redistributed) {
-        const maxAllowed = Math.max(0, Math.min(totalDeductiblePoints - otherDeductions, item.maxDeduction));
-        const maxScore = 100 - (maxAllowed * 100 / item.itemWeight);
+        // If redistribution failed, limit the current slider
+        const currentState = get().ungradedItems;
+        const currentOtherDeductions = currentState.reduce(
+          (sum, itm, idx) => (idx === index ? sum : sum + itm.deductedPoints),
+          0
+        );
         
-        const updatedItems = [...ungradedItems];
-        updatedItems[index] = {
+        const maxAllowed = Math.max(0, Math.min(totalDeductiblePoints - currentOtherDeductions, item.maxDeduction));
+        const maxScore = 100 - ((maxAllowed * 100) / item.itemWeight);
+        
+        const finalItems = [...currentState];
+        finalItems[index] = {
           ...item,
           deductedPoints: maxAllowed,
           assumedScore: parseFloat(Math.max(0, Math.min(100, maxScore)).toFixed(1)),
         };
-        set({ ungradedItems: updatedItems });
-        return;
+        set({ ungradedItems: finalItems });
       }
+    } else {
+      // Total is within limits, just update the current item
+      const updatedItems = [...ungradedItems];
+      updatedItems[index] = {
+        ...item,
+        deductedPoints: newDeduction,
+        assumedScore: parseFloat(newScore.toFixed(1)),
+      };
+      set({ ungradedItems: updatedItems });
     }
-    
-    const updatedItems = [...ungradedItems];
-    updatedItems[index] = {
-      ...item,
-      deductedPoints: newDeduction,
-      assumedScore: parseFloat(newScore.toFixed(1)),
-    };
-    set({ ungradedItems: updatedItems });
   },
   
   redistributeDeductions: (excludeIdx: number, needToFree: number): boolean => {
@@ -227,11 +218,14 @@ export const useProgressStore = create<ProgressStore>()((set, get) => ({
         const canReduce = item.deductedPoints;
         const actualReduction = Math.min(canReduce, targetReduction, remaining);
         
-        updatedItems[idx] = {
-          ...item,
-          deductedPoints: item.deductedPoints - actualReduction,
-        };
-        remaining -= actualReduction;
+        // Only update if not pinned
+        if (!updatedItems[idx].isPinned) {
+          updatedItems[idx] = {
+            ...item,
+            deductedPoints: item.deductedPoints - actualReduction,
+          };
+          remaining -= actualReduction;
+        }
       }
     }
     
@@ -243,23 +237,28 @@ export const useProgressStore = create<ProgressStore>()((set, get) => ({
         const canReduce = updatedItems[idx].deductedPoints;
         if (canReduce <= 0) continue;
         
-        const reduction = Math.min(canReduce, remaining);
-        updatedItems[idx] = {
-          ...updatedItems[idx],
-          deductedPoints: updatedItems[idx].deductedPoints - reduction,
-        };
-        remaining -= reduction;
+        // Only update if not pinned
+        if (!updatedItems[idx].isPinned) {
+          const reduction = Math.min(canReduce, remaining);
+          updatedItems[idx] = {
+            ...updatedItems[idx],
+            deductedPoints: updatedItems[idx].deductedPoints - reduction,
+          };
+          remaining -= reduction;
+        }
       }
     }
     
-    // Update scores
+    // Update scores only for non-pinned items
     for (const { idx } of adjustableItems) {
       const item = updatedItems[idx];
-      const scoreReduction = (item.deductedPoints * 100) / item.itemWeight;
-      updatedItems[idx] = {
-        ...item,
-        assumedScore: parseFloat(Math.max(0, Math.min(100, 100 - scoreReduction)).toFixed(1)),
-      };
+      if (!item.isPinned) {
+        const scoreReduction = (item.deductedPoints * 100) / item.itemWeight;
+        updatedItems[idx] = {
+          ...item,
+          assumedScore: parseFloat(Math.max(0, Math.min(100, 100 - scoreReduction)).toFixed(1)),
+        };
+      }
     }
     
     set({ ungradedItems: updatedItems });
@@ -306,5 +305,35 @@ export const useProgressStore = create<ProgressStore>()((set, get) => ({
     const projected = parseFloat(total.toFixed(2));
     set({ projectedGrade: projected });
     return projected;
+  },
+  
+  calculateMaxPossibleGrade: (categories: any[]): number => {
+    let total = 0;
+    
+    categories.forEach((cat) => {
+      const items = cat.items;
+      const totalItemsInCategory = items.length;
+      if (totalItemsInCategory === 0) return;
+      
+      const itemWeight = cat.weight / totalItemsInCategory;
+      
+      items.forEach((item: any) => {
+        let itemScore = 0;
+        
+        if (item.score !== null && item.score !== undefined && item.score !== '') {
+          // Use actual score for graded items
+          itemScore = item.score;
+        } else {
+          // Assume 100% for ungraded items
+          itemScore = 100;
+        }
+        
+        total += (itemWeight / 100) * itemScore;
+      });
+    });
+    
+    const maxPossible = parseFloat(total.toFixed(2));
+    set({ maxPossibleGrade: maxPossible });
+    return maxPossible;
   },
 }));

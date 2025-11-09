@@ -71,7 +71,7 @@
   padding: 28px;
   margin: 16px auto;
   box-shadow: var(--shadow-md);
-  overflow-x: hidden;
+  overflow: visible;
   width: 100%;
   max-width: 100%;
   min-width: 320px;
@@ -567,9 +567,9 @@
 
 /* Ungraded item slider container */
 .ungraded-item-slider {
-  padding: 10px 12px;
+  padding: 12px 14px;
   background: var(--bg-gray);
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid var(--border-light);
   transition: all 0.2s;
 }
@@ -579,9 +579,53 @@
   box-shadow: 0 2px 8px rgba(136, 28, 28, 0.08);
 }
 
+/* Slider header with item info and score */
+.slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  gap: 16px;
+}
+
+.slider-item-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.slider-item-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.slider-item-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--txt);
+  margin-bottom: 2px;
+}
+
+.slider-item-category {
+  font-size: 12px;
+  color: var(--txt-muted);
+}
+
 /* Slider value text input */
 .slider-value-input {
   transition: all 0.2s;
+  width: 65px;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--accent);
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  background: transparent;
+  outline: none;
 }
 
 .slider-value-input:focus {
@@ -739,7 +783,7 @@
   transition: all 0.2s;
 }
 
-.grade-btn:hover {
+.grade-btn:hover:not(.disabled) {
   background: var(--accent);
   color: var(--white);
   border-color: var(--accent);
@@ -751,6 +795,14 @@
   background: var(--accent);
   color: var(--white);
   border-color: var(--accent);
+}
+
+.grade-btn.disabled {
+  background: #f3f4f6;
+  color: #9ca3af;
+  border-color: #e5e7eb;
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .grade-select-hint {
@@ -782,6 +834,38 @@
 .pin-btn--active img {
   /* UMass 마룬 (#881c1c) */
   filter: brightness(0) saturate(100%) invert(14%) sepia(56%) saturate(3891%) hue-rotate(349deg) brightness(91%) contrast(88%);
+}
+
+/* Strategy selection buttons */
+.strategy-options {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.strategy-btn {
+  background: var(--white);
+  border: 2px solid var(--border);
+  color: var(--txt);
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.strategy-btn:hover {
+  background: var(--bg-gray);
+  border-color: var(--accent-light);
+}
+
+.strategy-btn.active {
+  background: var(--accent);
+  color: var(--white);
+  border-color: var(--accent);
+  box-shadow: 0 2px 6px rgba(136, 28, 28, 0.2);
 }
 
 @keyframes shimmer {

@@ -118,8 +118,19 @@
 }
 
 .upload-icon {
-  font-size: 48px;
   margin-bottom: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.upload-icon img {
+  filter: brightness(0) saturate(100%) invert(14%) sepia(56%) saturate(3891%) hue-rotate(349deg) brightness(91%) contrast(88%);
+  transition: filter 0.2s;
+}
+
+.upload-area:hover .upload-icon img {
+  filter: brightness(0) saturate(100%) invert(14%) sepia(56%) saturate(3891%) hue-rotate(349deg) brightness(91%) contrast(88%) drop-shadow(0 2px 4px rgba(136, 28, 28, 0.3));
 }
 
 .upload-area p {
@@ -201,7 +212,7 @@
 .setup-input-name:focus {
   outline: none;
   background: var(--white);
-  box-shadow: 0 0 0 2px var(--accent-light);
+  box-shadow: none;
 }
 
 .setup-category-count {
@@ -226,7 +237,7 @@
 .setup-input-count:focus {
   outline: none;
   background: var(--bg-gray);
-  box-shadow: 0 0 0 2px var(--accent-light);
+  box-shadow: none;
 }
 
 .setup-category-actions {
@@ -260,7 +271,7 @@
 .setup-input-weight:focus {
   outline: none;
   background: var(--bg-gray);
-  box-shadow: 0 0 0 2px var(--accent-light);
+  box-shadow: none;
 }
 
 .setup-total-weight {
@@ -324,9 +335,9 @@
 
 .btn-primary:disabled,
 .btn--primary:disabled {
-  background-color: rgb(209, 213, 219);
+  background-color: #d1d5db;
+  color: #9ca3af;
   cursor: not-allowed;
-  opacity: 0.6;
   transform: none;
 }
 

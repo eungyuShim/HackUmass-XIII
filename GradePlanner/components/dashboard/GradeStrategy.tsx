@@ -1,21 +1,30 @@
 // GradeStrategy.tsx - Grade Strategy with sliders and projected grade
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useCategoryStore } from '@/app/stores/useCategoryStore';
 import { useProgressStore } from '@/app/stores/useProgressStore';
+import { AVAILABLE_STRATEGIES, StrategyType } from '@/app/types/strategy';
 
 export default function GradeStrategy() {
   const categories = useCategoryStore((state) => state.categories);
   const currentTargetGrade = useProgressStore((state) => state.currentTargetGrade);
   const ungradedItems = useProgressStore((state) => state.ungradedItems);
   const projectedGrade = useProgressStore((state) => state.projectedGrade);
+  const currentStrategy = useProgressStore((state) => state.currentStrategy);
   const collectUngradedItems = useProgressStore((state) => state.collectUngradedItems);
   const calculateTotalDeductiblePoints = useProgressStore((state) => state.calculateTotalDeductiblePoints);
   const updateSlider = useProgressStore((state) => state.updateSlider);
   const togglePin = useProgressStore((state) => state.togglePin);
   const calculateProjectedGrade = useProgressStore((state) => state.calculateProjectedGrade);
+  const setStrategy = useProgressStore((state) => state.setStrategy);
+  
+  // Local state for text input values
+  const [inputValues, setInputValues] = useState<{ [key: number]: string }>({});
+  
+  // Track which input is currently being edited
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
   
   // Update ungraded items when categories change
   useEffect(() => {
@@ -27,17 +36,83 @@ export default function GradeStrategy() {
     calculateTotalDeductiblePoints(categories);
   }, [currentTargetGrade, categories, calculateTotalDeductiblePoints]);
   
+  // Recalculate when strategy changes
+  useEffect(() => {
+    if (categories.length > 0) {
+      calculateTotalDeductiblePoints(categories);
+    }
+  }, [currentStrategy]);
+  
   // Update projected grade when sliders change
   useEffect(() => {
     calculateProjectedGrade(categories);
   }, [ungradedItems, categories, calculateProjectedGrade]);
   
+  // Update local input values when ungradedItems change
+  useEffect(() => {
+    const newInputValues: { [key: number]: string } = {};
+    ungradedItems.forEach((item, index) => {
+      // Don't update the input that's currently being edited (user is typing)
+      // Always update pinned items and non-editing items
+      if (editingIndex !== index) {
+        newInputValues[index] = item.assumedScore.toFixed(1);
+      }
+    });
+    if (Object.keys(newInputValues).length > 0) {
+      setInputValues((prev) => ({ ...prev, ...newInputValues }));
+    }
+  }, [ungradedItems, editingIndex]);
+  
   const handleSliderChange = (index: number, value: number) => {
     updateSlider(index, value);
+    calculateProjectedGrade(categories);
+    
+    // Sync input value with the actual result after redistribution
+    // Use a timeout to ensure state has been updated
+    setTimeout(() => {
+      const item = ungradedItems[index];
+      if (item) {
+        setInputValues((prev) => ({ ...prev, [index]: item.assumedScore.toFixed(1) }));
+      }
+    }, 10);
+  };
+  
+  const handleInputChange = (index: number, value: string) => {
+    // Mark this input as being edited
+    setEditingIndex(index);
+    // Allow typing any value temporarily
+    setInputValues((prev) => ({ ...prev, [index]: value }));
+  };
+  
+  const handleInputBlur = (index: number) => {
+    // Clear editing state
+    setEditingIndex(null);
+    
+    const value = parseFloat(inputValues[index]);
+    const item = ungradedItems[index];
+    
+    if (isNaN(value) || !item) {
+      // Reset to current value if invalid
+      setInputValues((prev) => ({ ...prev, [index]: item?.assumedScore.toFixed(1) ?? '0.0' }));
+    } else {
+      // Clamp and update - handleSliderChange will sync the actual value
+      const clampedValue = Math.max(0, Math.min(100, value));
+      handleSliderChange(index, clampedValue);
+    }
+  };
+  
+  const handleInputKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      (e.target as HTMLInputElement).blur();
+    }
   };
   
   const handlePinToggle = (index: number) => {
     togglePin(index);
+  };
+  
+  const handleStrategyChange = (strategyType: StrategyType) => {
+    setStrategy(strategyType);
   };
   
   const hasUngradedItems = ungradedItems.length > 0;
@@ -73,6 +148,30 @@ export default function GradeStrategy() {
             </div>
           </div>
           
+          {/* Strategy Selection */}
+          <div style={{ marginBottom: '20px' }}>
+            <div style={{ 
+              fontSize: '14px', 
+              color: 'var(--txt-muted)', 
+              marginBottom: '8px',
+              fontWeight: 500
+            }}>
+              Distribution Strategy:
+            </div>
+            <div className="strategy-options">
+              {AVAILABLE_STRATEGIES.map((strategy) => (
+                <button
+                  key={strategy.id}
+                  className={`strategy-btn ${currentStrategy === strategy.id ? 'active' : ''}`}
+                  onClick={() => handleStrategyChange(strategy.id)}
+                  title={strategy.description}
+                >
+                  {strategy.name}
+                </button>
+              ))}
+            </div>
+          </div>
+          
           <div 
             id="ungradedItemsList" 
             style={{ 
@@ -83,31 +182,13 @@ export default function GradeStrategy() {
           >
             {ungradedItems.map((item, index) => (
               <div key={`${item.categoryId}-${item.itemName}`} className="ungraded-item-slider">
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'center', 
-                  marginBottom: '6px' 
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <div>
-                      <div 
-                        className="item-name" 
-                        style={{ 
-                          fontWeight: 600, 
-                          fontSize: '14px', 
-                          color: 'var(--txt)' 
-                        }}
-                      >
+                <div className="slider-header">
+                  <div className="slider-item-info">
+                    <div className="slider-item-text">
+                      <div className="slider-item-name">
                         {item.itemName}
                       </div>
-                      <div 
-                        className="item-category" 
-                        style={{ 
-                          fontSize: '12px', 
-                          color: 'var(--txt-muted)' 
-                        }}
-                      >
+                      <div className="slider-item-category">
                         {item.categoryName}
                       </div>
                     </div>
@@ -125,26 +206,13 @@ export default function GradeStrategy() {
                     </button>
                   </div>
                   <input
-                    type="number"
+                    type="text"
                     className="slider-value-input"
-                    min="0"
-                    max="100"
-                    step="0.1"
-                    value={item.assumedScore}
-                    onChange={(e) => handleSliderChange(index, parseFloat(e.target.value) || 0)}
+                    value={inputValues[index] ?? item.assumedScore.toFixed(1)}
+                    onChange={(e) => handleInputChange(index, e.target.value)}
+                    onBlur={() => handleInputBlur(index)}
+                    onKeyDown={(e) => handleInputKeyDown(index, e)}
                     disabled={item.isPinned}
-                    style={{
-                      width: '60px',
-                      textAlign: 'center',
-                      fontSize: '17px',
-                      fontWeight: 700,
-                      color: 'var(--accent)',
-                      border: 'none',
-                      borderRadius: '4px',
-                      padding: '2px 4px',
-                      background: 'transparent',
-                      outline: 'none',
-                    }}
                   />
                 </div>
                 <input
