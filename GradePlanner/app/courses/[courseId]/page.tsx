@@ -5,6 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import { useCategoryStore } from "@/app/stores/useCategoryStore";
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import { useFirstVisit } from "@/hooks/useAppInit";
+import { useCourseAssignments } from "@/hooks/useCanvasApi";
+import { ApiError } from "@/lib/api/client";
 import CategoryList from "@/components/dashboard/CategoryList";
 import ProgressBar from "@/components/dashboard/ProgressBar";
 import GradeStrategy from "@/components/dashboard/GradeStrategy";
@@ -23,8 +25,6 @@ export default function CourseDashboardPage() {
   const [isSetupModalOpen, setIsSetupModalOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [courseName, setCourseName] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [toast, setToast] = useState<{
     message: string;
     type: "success" | "error" | "info" | "warning";
@@ -32,11 +32,13 @@ export default function CourseDashboardPage() {
 
   const isFirstVisit = useFirstVisit();
   const setCategories = useCategoryStore((state) => state.setCategories);
-  const { isAuthenticated, getAuthHeaders } = useAuthStore();
+  const { isAuthenticated } = useAuthStore();
+  
+  // Use SWR for data fetching
+  const { categories, courseName: apiCourseName, isLoading, isError, error, refresh } = useCourseAssignments(courseId);
 
-  // Load course info and assignments from Canvas
+  // Check authentication
   useEffect(() => {
-    // Check authentication
     if (!isAuthenticated()) {
       router.push("/");
       return;
@@ -48,120 +50,101 @@ export default function CourseDashboardPage() {
       router.push("/courses");
       return;
     }
-
-    loadCourseData();
   }, [courseId, isAuthenticated, router]);
 
-  const loadCourseData = async () => {
-    try {
-      setLoading(true);
-      setError("");
-
-      const headers = getAuthHeaders();
-
-      // Fetch assignment groups and assignments from Canvas
-      const response = await fetch(`/api/canvas/assignments/${courseId}`, {
-        headers,
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to fetch assignments");
-      }
-
-      console.log("Canvas API Response:", data); // Debug log
-
-      // Set course name (from sessionStorage or API)
+  // Set course name from API or sessionStorage
+  useEffect(() => {
+    if (apiCourseName) {
+      setCourseName(apiCourseName);
+      sessionStorage.setItem(`course_name_${courseId}`, apiCourseName);
+    } else {
       const savedCourseName = sessionStorage.getItem(`course_name_${courseId}`);
       if (savedCourseName) {
         setCourseName(savedCourseName);
-      } else if (data.courseName) {
-        setCourseName(data.courseName);
-        sessionStorage.setItem(`course_name_${courseId}`, data.courseName);
       }
-
-      // Convert Canvas categories to app format
-      if (data.categories && data.categories.length > 0) {
-        const formattedCategories = data.categories.map(
-          (cat: any, index: number) => {
-            console.log("Processing category:", cat); // Debug log
-
-            return {
-              id: index + 1, // Use simple incremental ID
-              name: cat.name,
-              weight: cat.weight || 0,
-              items:
-                cat.assignments?.map((assignment: any) => {
-                  console.log(
-                    "Processing assignment:",
-                    assignment.name,
-                    assignment
-                  ); // Debug log
-
-                  // Convert score to percentage (score/maxScore * 100) with 1 decimal place
-                  let scorePercentage = null;
-                  if (assignment.graded && assignment.points > 0) {
-                    scorePercentage = parseFloat(
-                      ((assignment.earned / assignment.points) * 100).toFixed(1)
-                    );
-                  }
-
-                  return {
-                    name: assignment.name,
-                    score: scorePercentage,
-                    maxScore: assignment.points || 0,
-                    dueDate: assignment.dueDate,
-                    submitted: assignment.submitted || false,
-                    graded: assignment.graded || false,
-                    late: assignment.late || false,
-                    missing: assignment.missing || false,
-                  };
-                }) || [],
-              editingName: false,
-              editingWeight: false,
-              showItems: true,
-            };
-          }
-        );
-
-        console.log("Formatted categories:", formattedCategories); // Debug log
-        setCategories(formattedCategories);
-        setToast({
-          message: "Course data loaded successfully!",
-          type: "success",
-        });
-      } else {
-        console.log("No categories found in response");
-        setToast({
-          message: "No assignment categories found for this course",
-          type: "warning",
-        });
-      }
-    } catch (err) {
-      console.error("Failed to fetch course data:", err);
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to load course data";
-      setError(errorMessage);
-      setToast({ message: errorMessage, type: "error" });
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [apiCourseName, courseId]);
+
+  // Process and store categories from SWR data
+  useEffect(() => {
+    if (!isLoading && categories && categories.length > 0) {
+      console.log("Canvas API Response:", { categories }); // Debug log
+
+      const formattedCategories = categories.map((cat: any, index: number) => {
+        console.log("Processing category:", cat); // Debug log
+
+        return {
+          id: index + 1, // Use simple incremental ID
+          name: cat.name,
+          weight: cat.weight || 0,
+          items:
+            cat.assignments?.map((assignment: any) => {
+              console.log("Processing assignment:", assignment.name, assignment); // Debug log
+
+              // Convert score to percentage (score/maxScore * 100) with 1 decimal place
+              let scorePercentage = null;
+              if (assignment.graded && assignment.points > 0) {
+                scorePercentage = parseFloat(
+                  ((assignment.earned / assignment.points) * 100).toFixed(1)
+                );
+              }
+
+              return {
+                name: assignment.name,
+                score: scorePercentage,
+                maxScore: assignment.points || 0,
+                dueDate: assignment.dueDate,
+                submitted: assignment.submitted || false,
+                graded: assignment.graded || false,
+                late: assignment.late || false,
+                missing: assignment.missing || false,
+              };
+            }) || [],
+          editingName: false,
+          editingWeight: false,
+          showItems: true,
+        };
+      });
+
+      console.log("Formatted categories:", formattedCategories); // Debug log
+      setCategories(formattedCategories);
+      setToast({
+        message: "Course data loaded successfully!",
+        type: "success",
+      });
+    } else if (!isLoading && categories && categories.length === 0) {
+      console.log("No categories found in response");
+      setToast({
+        message: "No assignment categories found for this course",
+        type: "warning",
+      });
+    }
+  }, [categories, isLoading, setCategories]);
+
+  // Show error toast
+  useEffect(() => {
+    if (isError && error) {
+      console.error("Failed to fetch course data:", error);
+      const errorMessage = error instanceof ApiError 
+        ? error.message 
+        : "Failed to load course data";
+      setToast({ message: errorMessage, type: "error" });
+    }
+  }, [isError, error]);
 
   // Open setup modal on first visit
   useEffect(() => {
-    if (isFirstVisit && !loading) {
+    if (isFirstVisit && !isLoading) {
       setIsSetupModalOpen(true);
     }
-  }, [isFirstVisit, loading]);
+  }, [isFirstVisit, isLoading]);
 
   const handleBackToCourses = () => {
     router.push("/courses");
   };
 
   const handleRefreshData = () => {
-    loadCourseData();
+    refresh();
   };
 
   return (
@@ -258,13 +241,13 @@ export default function CourseDashboardPage() {
           </div>
         </header>
 
-        {loading ? (
+        {isLoading ? (
           <div style={{ padding: "2rem" }}>
             <CategorySkeleton />
             <CategorySkeleton />
             <CategorySkeleton />
           </div>
-        ) : error ? (
+        ) : isError ? (
           <div
             style={{
               textAlign: "center",
@@ -275,14 +258,23 @@ export default function CourseDashboardPage() {
             <p style={{ fontSize: "18px", marginBottom: "8px" }}>
               Error loading course
             </p>
-            <p style={{ fontSize: "14px" }}>{error}</p>
-            <button
-              className="btn btn--outline"
-              style={{ marginTop: "16px" }}
-              onClick={handleBackToCourses}
-            >
-              Back to Courses
-            </button>
+            <p style={{ fontSize: "14px" }}>
+              {error instanceof ApiError ? error.message : "Failed to load course data"}
+            </p>
+            <div style={{ display: "flex", gap: "12px", justifyContent: "center", marginTop: "16px" }}>
+              <button
+                className="btn btn--primary"
+                onClick={handleRefreshData}
+              >
+                Retry
+              </button>
+              <button
+                className="btn btn--outline"
+                onClick={handleBackToCourses}
+              >
+                Back to Courses
+              </button>
+            </div>
           </div>
         ) : (
           <div className="wrap">

@@ -6,6 +6,8 @@ import { CourseCard } from "@/components/courses/CourseCard";
 import { CourseCardSkeleton } from "@/components/shared/Skeleton";
 import Toast from "@/components/shared/Toast";
 import { useAuthStore } from "@/app/stores/useAuthStore";
+import { useCanvasCourses } from "@/hooks/useCanvasApi";
+import { ApiError } from "@/lib/api/client";
 import "@/components/shared/global.css";
 import "@/components/courses/course.css";
 
@@ -18,17 +20,16 @@ interface Course {
 }
 
 export default function CoursesPage() {
-  const [hasToken, setHasToken] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [toast, setToast] = useState<{
     message: string;
     type: "success" | "error" | "info" | "warning";
   } | null>(null);
   const router = useRouter();
-  const { isAuthenticated, getAuthHeaders, clearAuth } = useAuthStore();
+  const { isAuthenticated, clearAuth } = useAuthStore();
+  
+  // Use SWR for data fetching
+  const { courses, isLoading, isError, error, refresh } = useCanvasCourses();
 
   useEffect(() => {
     // Check authentication
@@ -36,46 +37,27 @@ export default function CoursesPage() {
       router.push("/");
       return;
     }
+  }, [isAuthenticated, router]);
 
-    fetchCourses();
-  }, []);
-
-  const fetchCourses = async () => {
-    try {
-      setLoading(true);
-      setError("");
-
-      const headers = getAuthHeaders();
-
-      const response = await fetch("/api/canvas/courses", {
-        headers,
+  useEffect(() => {
+    // Show success toast when courses are loaded
+    if (!isLoading && courses.length > 0 && !toast) {
+      setToast({
+        message: `Loaded ${courses.length} course(s)`,
+        type: "success",
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to fetch courses");
-      }
-
-      setCourses(data.courses || []);
-      setHasToken(true);
-
-      if (data.courses && data.courses.length > 0) {
-        setToast({
-          message: `Loaded ${data.courses.length} course(s)`,
-          type: "success",
-        });
-      }
-    } catch (err) {
-      console.error("Failed to fetch courses:", err);
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to load courses";
-      setError(errorMessage);
-      setToast({ message: errorMessage, type: "error" });
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [courses, isLoading]);
+
+  useEffect(() => {
+    // Show error toast if there's an error
+    if (isError && error) {
+      const errorMessage = error instanceof ApiError 
+        ? error.message 
+        : "Failed to load courses";
+      setToast({ message: errorMessage, type: "error" });
+    }
+  }, [isError, error]);
 
   const handleLogout = () => {
     clearAuth();
@@ -173,13 +155,13 @@ export default function CoursesPage() {
             </div>
           </div>
           <div className="pill" id="tok">
-            {hasToken ? "✓ Token detected" : "Demo mode (no token)"}
+            {isAuthenticated() ? "✓ Token detected" : "Demo mode (no token)"}
           </div>
         </header>
 
         <div className="grid-wrapper">
           <section className="grid" id="list">
-            {loading ? (
+            {isLoading ? (
               <>
                 <CourseCardSkeleton />
                 <CourseCardSkeleton />
@@ -188,7 +170,7 @@ export default function CoursesPage() {
                 <CourseCardSkeleton />
                 <CourseCardSkeleton />
               </>
-            ) : error ? (
+            ) : isError ? (
               <div
                 style={{
                   gridColumn: "1 / -1",
@@ -200,14 +182,23 @@ export default function CoursesPage() {
                 <p style={{ fontSize: "18px", marginBottom: "8px" }}>
                   Error loading courses
                 </p>
-                <p style={{ fontSize: "14px" }}>{error}</p>
-                <button
-                  className="btn btn--outline"
-                  style={{ marginTop: "16px" }}
-                  onClick={() => router.push("/")}
-                >
-                  Back to Login
-                </button>
+                <p style={{ fontSize: "14px" }}>
+                  {error instanceof ApiError ? error.message : "Failed to load courses"}
+                </p>
+                <div style={{ display: "flex", gap: "12px", justifyContent: "center", marginTop: "16px" }}>
+                  <button
+                    className="btn btn--primary"
+                    onClick={() => refresh()}
+                  >
+                    Retry
+                  </button>
+                  <button
+                    className="btn btn--outline"
+                    onClick={() => router.push("/")}
+                  >
+                    Back to Login
+                  </button>
+                </div>
               </div>
             ) : courses.length === 0 ? (
               <div
@@ -222,11 +213,11 @@ export default function CoursesPage() {
                   No courses found
                 </p>
                 <p style={{ fontSize: "14px" }}>
-                  {hasToken
+                  {isAuthenticated()
                     ? "No active courses are available for this account."
                     : "Please enter your Canvas access token to view your courses."}
                 </p>
-                {!hasToken && (
+                {!isAuthenticated() && (
                   <button
                     className="btn btn--primary"
                     style={{ marginTop: "16px" }}
