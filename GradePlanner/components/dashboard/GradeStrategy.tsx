@@ -14,6 +14,7 @@ export default function GradeStrategy() {
   );
   const ungradedItems = useProgressStore((state) => state.ungradedItems);
   const projectedGrade = useProgressStore((state) => state.projectedGrade);
+  const maxPossibleGrade = useProgressStore((state) => state.maxPossibleGrade);
   const currentStrategy = useProgressStore((state) => state.currentStrategy);
   const collectUngradedItems = useProgressStore(
     (state) => state.collectUngradedItems
@@ -25,6 +26,9 @@ export default function GradeStrategy() {
   const togglePin = useProgressStore((state) => state.togglePin);
   const calculateProjectedGrade = useProgressStore(
     (state) => state.calculateProjectedGrade
+  );
+  const calculateMaxPossibleGrade = useProgressStore(
+    (state) => state.calculateMaxPossibleGrade
   );
   const setStrategy = useProgressStore((state) => state.setStrategy);
 
@@ -152,12 +156,63 @@ export default function GradeStrategy() {
   };
 
   const hasUngradedItems = ungradedItems.length > 0;
+  
+  // Check if target is achievable
+  const targetPercentage = { 'A': 93, 'A-': 90, 'B+': 87, 'B': 83, 'B-': 80, 'C+': 77, 'C': 73, 'C-': 70 }[currentTargetGrade] || 93;
+  const isTargetAchievable = maxPossibleGrade >= targetPercentage;
+  
+  // Count attendance items
+  const attendanceItems = ungradedItems.filter(item => item.isAttendance);
+  const attendanceNeeded = attendanceItems.filter(item => item.assumedScore === 1).length;
+  const attendanceTotal = attendanceItems.length;
 
   return (
     <>
       {/* Target Strategy Card */}
       {hasUngradedItems && (
         <div className="card" id="targetStrategy">
+          {/* Goal Achievability Warning */}
+          {!isTargetAchievable && (
+            <div
+              style={{
+                padding: "12px",
+                backgroundColor: "#fee2e2",
+                border: "1px solid #ef4444",
+                borderRadius: "8px",
+                marginBottom: "16px",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <span style={{ fontSize: "18px" }}>⚠️</span>
+                <div>
+                  <div style={{ fontWeight: 600, color: "#991b1b", marginBottom: "4px" }}>
+                    Target Grade Not Achievable
+                  </div>
+                  <div style={{ fontSize: "13px", color: "#7f1d1d" }}>
+                    Maximum possible grade: {maxPossibleGrade.toFixed(1)}% (even with 100% on all remaining items)
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* Attendance Info */}
+          {attendanceItems.length > 0 && (
+            <div
+              style={{
+                padding: "10px 12px",
+                backgroundColor: "#dbeafe",
+                border: "1px solid #3b82f6",
+                borderRadius: "8px",
+                marginBottom: "16px",
+                fontSize: "13px",
+                color: "#1e40af",
+              }}
+            >
+              📅 Attendance Required: <strong>{attendanceNeeded}</strong> out of <strong>{attendanceTotal}</strong> sessions
+            </div>
+          )}
+          
           <div
             style={{
               display: "flex",
@@ -184,7 +239,7 @@ export default function GradeStrategy() {
                 style={{
                   fontSize: "24px",
                   fontWeight: 700,
-                  color: "var(--accent)",
+                  color: isTargetAchievable ? "var(--accent)" : "#ef4444",
                 }}
               >
                 {projectedGrade.toFixed(1)}%
@@ -252,13 +307,35 @@ export default function GradeStrategy() {
               <div
                 key={`${item.categoryId}-${item.itemName}`}
                 className="ungraded-item-slider"
+                style={item.isAttendance ? {
+                  border: '2px solid #3b82f6',
+                  backgroundColor: '#eff6ff'
+                } : undefined}
               >
                 <div className="slider-header">
                   <div className="slider-item-info">
                     <div className="slider-item-text">
-                      <div className="slider-item-name">{item.itemName}</div>
+                      <div className="slider-item-name">
+                        {item.isAttendance && '📅 '}
+                        {item.itemName}
+                        {item.assumedScore === 0 && item.isAttendance && (
+                          <span style={{ 
+                            marginLeft: '8px', 
+                            fontSize: '12px', 
+                            color: '#dc2626',
+                            fontWeight: 600 
+                          }}>
+                            (Absent)
+                          </span>
+                        )}
+                      </div>
                       <div className="slider-item-category">
                         {item.categoryName}
+                        {item.isAttendance && (
+                          <span style={{ marginLeft: '8px', fontSize: '11px', color: '#3b82f6' }}>
+                            • Attendance (0 or 100 only)
+                          </span>
+                        )}
                       </div>
                     </div>
                     <button
@@ -279,11 +356,20 @@ export default function GradeStrategy() {
                   <input
                     type="text"
                     className="slider-value-input"
-                    value={inputValues[index] ?? item.assumedScore.toFixed(1)}
+                    value={item.isAttendance 
+                      ? (item.assumedScore === 1 ? '100' : '0')
+                      : (inputValues[index] ?? item.assumedScore.toFixed(1))
+                    }
                     onChange={(e) => handleInputChange(index, e.target.value)}
                     onBlur={() => handleInputBlur(index)}
                     onKeyDown={(e) => handleInputKeyDown(index, e)}
                     disabled={item.isPinned}
+                    readOnly={item.isAttendance}
+                    style={item.isAttendance ? {
+                      backgroundColor: item.assumedScore === 1 ? '#dcfce7' : '#fee2e2',
+                      color: item.assumedScore === 1 ? '#166534' : '#991b1b',
+                      fontWeight: 600
+                    } : undefined}
                   />
                 </div>
                 <input
@@ -291,12 +377,13 @@ export default function GradeStrategy() {
                   className="target-slider"
                   min="0"
                   max="100"
-                  step="0.1"
-                  value={item.assumedScore}
+                  step={item.isAttendance ? "100" : "0.1"}
+                  value={item.isAttendance ? (item.assumedScore === 1 ? 100 : 0) : item.assumedScore}
                   onChange={(e) =>
                     handleSliderChange(index, parseFloat(e.target.value))
                   }
-                  disabled={item.isPinned}
+                  disabled={item.isPinned || item.isAttendance}
+                  style={item.isAttendance ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
                 />
               </div>
             ))}

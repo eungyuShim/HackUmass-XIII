@@ -148,6 +148,192 @@ export function calculatePointsNeeded(
 }
 
 /**
+ * Check if target is achievable with remaining items
+ */
+export interface UngradedItemInfo {
+  itemWeight: number;
+  isAttendance?: boolean;
+}
+
+export function isTargetAchievable(
+  currentScore: number,
+  targetScore: number,
+  ungradedItems: UngradedItemInfo[]
+): { achievable: boolean; maxPossible: number; deductionAllowed: number } {
+  const totalRemainingWeight = ungradedItems.reduce(
+    (sum, item) => sum + item.itemWeight,
+    0
+  );
+  const maxPossible = currentScore + totalRemainingWeight;
+  const deductionAllowed = maxPossible - targetScore;
+
+  return {
+    achievable: maxPossible >= targetScore,
+    maxPossible,
+    deductionAllowed: Math.max(0, deductionAllowed),
+  };
+}
+
+/**
+ * Attendance rounding and surplus redistribution
+ * Attendance는 출석(100) 또는 결석(0)만 가능하므로 올림 처리
+ */
+export interface AttendanceRoundingResult {
+  attendanceItems: Array<{
+    itemName: string;
+    itemWeight: number;
+    requiredScore: number; // 0 or 1
+    originalNeeded: number;
+  }>;
+  surplus: number; // 올림으로 생긴 여유
+}
+
+export function handleAttendanceRounding(
+  attendanceItems: Array<{ itemName: string; itemWeight: number; neededPct: number }>,
+  regularItems: Array<{ itemName: string; itemWeight: number; neededPct: number }>
+): AttendanceRoundingResult {
+  // Attendance 총 필요량 계산
+  const totalAttendanceNeeded = attendanceItems.reduce(
+    (sum, item) => sum + item.neededPct,
+    0
+  );
+
+  // 개수 기준 올림 (예: 8.3% 필요 → 9번 출석)
+  const attendanceCountNeeded = Math.ceil(totalAttendanceNeeded);
+
+  // 실제 획득 - 필요량 = 여유
+  const surplus = attendanceCountNeeded - totalAttendanceNeeded;
+
+  // 필요도 순으로 정렬 (높은 것부터)
+  const sortedAttendance = [...attendanceItems].sort(
+    (a, b) => b.neededPct - a.neededPct
+  );
+
+  // 상위 N개는 출석(1), 나머지는 결석(0)
+  const result = sortedAttendance.map((item, index) => ({
+    itemName: item.itemName,
+    itemWeight: item.itemWeight,
+    requiredScore: index < attendanceCountNeeded ? 1 : 0,
+    originalNeeded: item.neededPct,
+  }));
+
+  return {
+    attendanceItems: result,
+    surplus: Math.max(0, surplus),
+  };
+}
+
+/**
+ * Redistribute surplus from attendance rounding to regular items
+ */
+export interface RedistributeResult {
+  itemName: string;
+  itemWeight: number;
+  originalNeeded: number;
+  additionalDeduction: number;
+  finalNeeded: number;
+}
+
+export function redistributeSurplus(
+  regularItems: Array<{ itemName: string; itemWeight: number; neededPct: number }>,
+  surplus: number,
+  strategy: 'equal' | 'proportional'
+): RedistributeResult[] {
+  if (surplus <= 0.0001 || regularItems.length === 0) {
+    return regularItems.map((item) => ({
+      itemName: item.itemName,
+      itemWeight: item.itemWeight,
+      originalNeeded: item.neededPct,
+      additionalDeduction: 0,
+      finalNeeded: item.neededPct,
+    }));
+  }
+
+  const validItems = regularItems.filter((item) => item.neededPct > 0);
+
+  if (validItems.length === 0) {
+    return regularItems.map((item) => ({
+      itemName: item.itemName,
+      itemWeight: item.itemWeight,
+      originalNeeded: item.neededPct,
+      additionalDeduction: 0,
+      finalNeeded: item.neededPct,
+    }));
+  }
+
+  if (strategy === 'equal') {
+    // 균등 추가 감점
+    let remaining = surplus;
+    const updatedItems = [...validItems];
+    const sacrificed: Set<number> = new Set();
+
+    let iteration = 0;
+    while (remaining > 0.0001 && updatedItems.length > sacrificed.size) {
+      const activeItems = updatedItems.filter((_, idx) => !sacrificed.has(idx));
+      if (activeItems.length === 0) break;
+
+      const equalDeduction = remaining / activeItems.length;
+      let carryOver = 0;
+
+      activeItems.forEach((item, idx) => {
+        const actualIdx = updatedItems.findIndex((i) => i === item);
+        const newNeeded = item.neededPct - equalDeduction;
+
+        if (newNeeded < 0) {
+          carryOver += Math.abs(newNeeded);
+          updatedItems[actualIdx] = { ...item, neededPct: 0 };
+          sacrificed.add(actualIdx);
+        } else {
+          updatedItems[actualIdx] = { ...item, neededPct: newNeeded };
+        }
+      });
+
+      remaining = carryOver;
+      iteration++;
+      if (iteration > 100) break; // Safety limit
+    }
+
+    return updatedItems.map((item) => ({
+      itemName: item.itemName,
+      itemWeight: item.itemWeight,
+      originalNeeded: regularItems.find((r) => r.itemName === item.itemName)!
+        .neededPct,
+      additionalDeduction:
+        regularItems.find((r) => r.itemName === item.itemName)!.neededPct -
+        item.neededPct,
+      finalNeeded: item.neededPct,
+    }));
+  } else {
+    // 비례 추가 감점
+    const totalNeeded = validItems.reduce((sum, item) => sum + item.neededPct, 0);
+
+    return regularItems.map((item) => {
+      if (item.neededPct <= 0) {
+        return {
+          itemName: item.itemName,
+          itemWeight: item.itemWeight,
+          originalNeeded: item.neededPct,
+          additionalDeduction: 0,
+          finalNeeded: item.neededPct,
+        };
+      }
+
+      const proportion = item.neededPct / totalNeeded;
+      const additionalDeduction = surplus * proportion;
+      const finalNeeded = Math.max(0, item.neededPct - additionalDeduction);
+
+      return {
+        itemName: item.itemName,
+        itemWeight: item.itemWeight,
+        originalNeeded: item.neededPct,
+        additionalDeduction,
+        finalNeeded,
+      };
+    });
+  }
+}
+
+/**
  * Format grade for display
  */
 export function formatGrade(grade: number, decimals: number = 1): string {

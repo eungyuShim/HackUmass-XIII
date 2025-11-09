@@ -19,6 +19,9 @@ export function mapCanvasCourse(canvasCourse: CanvasCourse) {
  * Map Canvas assignment to app's Assignment type
  */
 export function mapCanvasAssignment(assignment: CanvasAssignment) {
+  // Attendance 감지: 이름에 "attendance"가 포함되는 경우
+  const isAttendance = assignment.name.toLowerCase().includes('attendance');
+
   return {
     id: assignment.id.toString(),
     name: assignment.name,
@@ -35,6 +38,7 @@ export function mapCanvasAssignment(assignment: CanvasAssignment) {
     excused: assignment.submission?.excused || false,
     gradingType: assignment.grading_type || "points",
     htmlUrl: assignment.html_url,
+    isAttendance, // Attendance 플래그 추가
   };
 }
 
@@ -45,6 +49,9 @@ export function mapAssignmentGroup(
   group: CanvasAssignmentGroup,
   courseId: string
 ) {
+  // 카테고리 이름으로 attendance 감지
+  const isAttendanceCategory = group.name.toLowerCase().includes('attendance');
+
   return {
     id: `${courseId}-${group.id}`,
     courseId,
@@ -53,10 +60,12 @@ export function mapAssignmentGroup(
     position: group.position,
     dropLowest: group.rules?.drop_lowest || 0,
     dropHighest: group.rules?.drop_highest || 0,
+    isAttendance: isAttendanceCategory,
     assignments:
       group.assignments?.map((a) => ({
         ...mapCanvasAssignment(a),
         category: group.name,
+        isAttendance: isAttendanceCategory || a.name.toLowerCase().includes('attendance'),
       })) || [],
   };
 }

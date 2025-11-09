@@ -3,6 +3,7 @@
 export interface CategoryItem {
   name: string;
   score: number | null;
+  isAttendance?: boolean; // 출석 항목 여부 (0 또는 100만 가능)
   _editingName?: boolean;
   _editingScore?: boolean;
 }
@@ -35,6 +36,7 @@ export interface UngradedItem {
   deductedPoints: number;
   maxDeduction: number;
   isPinned: boolean;
+  isAttendance?: boolean; // 출석 항목 여부
 }
 
 export type TargetGrade = 'A' | 'A-' | 'B+' | 'B' | 'B-' | 'C+' | 'C' | 'C-';

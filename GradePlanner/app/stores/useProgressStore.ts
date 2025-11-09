@@ -57,6 +57,12 @@ export const useProgressStore = create<ProgressStore>()((set, get) => ({
       
       items.forEach((item: any) => {
         if (item.score === null || item.score === undefined || item.score === '') {
+          // Attendance 감지: 이름에 "attendance"가 포함되거나 카테고리 이름이 "attendance"인 경우
+          const isAttendance = 
+            item.isAttendance || 
+            item.name.toLowerCase().includes('attendance') ||
+            cat.name.toLowerCase().includes('attendance');
+
           ungradedItems.push({
             categoryName: cat.name,
             categoryWeight: cat.weight,
@@ -65,10 +71,11 @@ export const useProgressStore = create<ProgressStore>()((set, get) => ({
             itemId: item.id,
             itemWeight,
             totalItemsInCategory,
-            assumedScore: 100,
+            assumedScore: isAttendance ? 1 : 100,
             deductedPoints: 0,
             maxDeduction: 0,
             isPinned: false,
+            isAttendance,
           });
         }
       });
@@ -295,7 +302,17 @@ export const useProgressStore = create<ProgressStore>()((set, get) => ({
           const ungradedItem = ungradedItems.find(
             (ui) => ui.categoryId === cat.id && ui.itemName === item.name
           );
-          itemScore = ungradedItem ? ungradedItem.assumedScore : 100;
+          if (ungradedItem) {
+            // Attendance: assumedScore는 0 또는 1
+            // Regular: assumedScore는 0-100
+            if (ungradedItem.isAttendance) {
+              itemScore = ungradedItem.assumedScore === 1 ? 100 : 0;
+            } else {
+              itemScore = ungradedItem.assumedScore;
+            }
+          } else {
+            itemScore = 100;
+          }
         }
         
         total += (itemWeight / 100) * itemScore;
