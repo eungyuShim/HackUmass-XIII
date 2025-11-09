@@ -23,7 +23,11 @@
 }
 
 .hero-gradient {
-  background: radial-gradient(circle at 57% 46%, rgba(192, 56, 56, 1) 0%, rgba(136, 28, 28, 1) 55%);
+  background: radial-gradient(
+    circle at 57% 46%,
+    rgba(192, 56, 56, 1) 0%,
+    rgba(136, 28, 28, 1) 55%
+  );
 }
 
 .search {
@@ -39,7 +43,7 @@
   font-size: 15px;
   background: var(--white);
   color: var(--txt);
-  transition: border-color .2s, box-shadow .2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .input::placeholder {
