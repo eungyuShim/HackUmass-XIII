@@ -71,7 +71,7 @@
   padding: 28px;
   margin: 16px auto;
   box-shadow: var(--shadow-md);
-  overflow-x: hidden;
+  overflow: visible;
   width: 100%;
   max-width: 100%;
   min-width: 320px;
@@ -567,9 +567,9 @@
 
 /* Ungraded item slider container */
 .ungraded-item-slider {
-  padding: 10px 12px;
+  padding: 12px 14px;
   background: var(--bg-gray);
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid var(--border-light);
   transition: all 0.2s;
 }
@@ -579,9 +579,53 @@
   box-shadow: 0 2px 8px rgba(136, 28, 28, 0.08);
 }
 
+/* Slider header with item info and score */
+.slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  gap: 16px;
+}
+
+.slider-item-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.slider-item-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.slider-item-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--txt);
+  margin-bottom: 2px;
+}
+
+.slider-item-category {
+  font-size: 12px;
+  color: var(--txt-muted);
+}
+
 /* Slider value text input */
 .slider-value-input {
   transition: all 0.2s;
+  width: 65px;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--accent);
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  background: transparent;
+  outline: none;
 }
 
 .slider-value-input:focus {

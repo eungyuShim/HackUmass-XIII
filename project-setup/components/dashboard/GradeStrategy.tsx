@@ -34,6 +34,8 @@ export default function GradeStrategy() {
   
   const handleSliderChange = (index: number, value: number) => {
     updateSlider(index, value);
+    // Recalculate projected grade after slider change
+    calculateProjectedGrade(categories);
   };
   
   const handlePinToggle = (index: number) => {
@@ -83,31 +85,13 @@ export default function GradeStrategy() {
           >
             {ungradedItems.map((item, index) => (
               <div key={`${item.categoryId}-${item.itemName}`} className="ungraded-item-slider">
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'center', 
-                  marginBottom: '6px' 
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <div>
-                      <div 
-                        className="item-name" 
-                        style={{ 
-                          fontWeight: 600, 
-                          fontSize: '14px', 
-                          color: 'var(--txt)' 
-                        }}
-                      >
+                <div className="slider-header">
+                  <div className="slider-item-info">
+                    <div className="slider-item-text">
+                      <div className="slider-item-name">
                         {item.itemName}
                       </div>
-                      <div 
-                        className="item-category" 
-                        style={{ 
-                          fontSize: '12px', 
-                          color: 'var(--txt-muted)' 
-                        }}
-                      >
+                      <div className="slider-item-category">
                         {item.categoryName}
                       </div>
                     </div>
@@ -133,18 +117,6 @@ export default function GradeStrategy() {
                     value={item.assumedScore}
                     onChange={(e) => handleSliderChange(index, parseFloat(e.target.value) || 0)}
                     disabled={item.isPinned}
-                    style={{
-                      width: '60px',
-                      textAlign: 'center',
-                      fontSize: '17px',
-                      fontWeight: 700,
-                      color: 'var(--accent)',
-                      border: 'none',
-                      borderRadius: '4px',
-                      padding: '2px 4px',
-                      background: 'transparent',
-                      outline: 'none',
-                    }}
                   />
                 </div>
                 <input
