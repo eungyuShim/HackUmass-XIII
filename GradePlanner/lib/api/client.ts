@@ -1,11 +1,7 @@
 import { useAuthStore } from "@/app/stores/useAuthStore";
 
 export class ApiError extends Error {
-  constructor(
-    message: string,
-    public status: number,
-    public data?: any
-  ) {
+  constructor(message: string, public status: number, public data?: any) {
     super(message);
     this.name = "ApiError";
   }
@@ -55,14 +51,19 @@ export class ApiClient {
     if (response.status === 429) {
       const retryAfter = response.headers.get("Retry-After");
       throw new ApiError(
-        `Rate limit exceeded. Please try again ${retryAfter ? `after ${retryAfter} seconds` : "later"}.`,
+        `Rate limit exceeded. Please try again ${
+          retryAfter ? `after ${retryAfter} seconds` : "later"
+        }.`,
         429
       );
     }
 
     // 500+: Server Error
     if (response.status >= 500) {
-      throw new ApiError("Server error. Please try again later.", response.status);
+      throw new ApiError(
+        "Server error. Please try again later.",
+        response.status
+      );
     }
 
     // Other errors
@@ -99,10 +100,7 @@ export class ApiClient {
         throw error;
       }
       if (error instanceof TypeError) {
-        throw new ApiError(
-          "Network error. Please check your connection.",
-          0
-        );
+        throw new ApiError("Network error. Please check your connection.", 0);
       }
       throw new ApiError("An unexpected error occurred.", 0);
     }
@@ -122,10 +120,7 @@ export class ApiClient {
         throw error;
       }
       if (error instanceof TypeError) {
-        throw new ApiError(
-          "Network error. Please check your connection.",
-          0
-        );
+        throw new ApiError("Network error. Please check your connection.", 0);
       }
       throw new ApiError("An unexpected error occurred.", 0);
     }
@@ -145,10 +140,7 @@ export class ApiClient {
         throw error;
       }
       if (error instanceof TypeError) {
-        throw new ApiError(
-          "Network error. Please check your connection.",
-          0
-        );
+        throw new ApiError("Network error. Please check your connection.", 0);
       }
       throw new ApiError("An unexpected error occurred.", 0);
     }
@@ -167,10 +159,7 @@ export class ApiClient {
         throw error;
       }
       if (error instanceof TypeError) {
-        throw new ApiError(
-          "Network error. Please check your connection.",
-          0
-        );
+        throw new ApiError("Network error. Please check your connection.", 0);
       }
       throw new ApiError("An unexpected error occurred.", 0);
     }

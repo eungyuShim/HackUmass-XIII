@@ -28,7 +28,7 @@ export default function CoursesPage() {
   } | null>(null);
   const router = useRouter();
   const { isAuthenticated, clearAuth } = useAuthStore();
-  
+
   // Use SWR for data fetching
   const { courses, isLoading, isError, error, refresh } = useCanvasCourses();
 
@@ -58,9 +58,8 @@ export default function CoursesPage() {
   useEffect(() => {
     // Show error toast if there's an error
     if (isError && error) {
-      const errorMessage = error instanceof ApiError 
-        ? error.message 
-        : "Failed to load courses";
+      const errorMessage =
+        error instanceof ApiError ? error.message : "Failed to load courses";
       setToast({ message: errorMessage, type: "error" });
     }
   }, [isError, error]);
@@ -161,7 +160,9 @@ export default function CoursesPage() {
             </div>
           </div>
           <div className="pill" id="tok">
-            {mounted && isAuthenticated() ? "✓ Token detected" : "Demo mode (no token)"}
+            {mounted && isAuthenticated()
+              ? "✓ Token detected"
+              : "Demo mode (no token)"}
           </div>
         </header>
 
@@ -189,9 +190,18 @@ export default function CoursesPage() {
                   Error loading courses
                 </p>
                 <p style={{ fontSize: "14px" }}>
-                  {error instanceof ApiError ? error.message : "Failed to load courses"}
+                  {error instanceof ApiError
+                    ? error.message
+                    : "Failed to load courses"}
                 </p>
-                <div style={{ display: "flex", gap: "12px", justifyContent: "center", marginTop: "16px" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "12px",
+                    justifyContent: "center",
+                    marginTop: "16px",
+                  }}
+                >
                   <button
                     className="btn btn--primary"
                     onClick={() => refresh()}

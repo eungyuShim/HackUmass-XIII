@@ -11,10 +11,10 @@
 ```typescript
 // lib/api/client.ts
 export class ApiClient {
-  static async get<T>(endpoint: string): Promise<T>
-  static async post<T>(endpoint: string, data?: any): Promise<T>
-  static async put<T>(endpoint: string, data?: any): Promise<T>
-  static async delete<T>(endpoint: string): Promise<T>
+  static async get<T>(endpoint: string): Promise<T>;
+  static async post<T>(endpoint: string, data?: any): Promise<T>;
+  static async put<T>(endpoint: string, data?: any): Promise<T>;
+  static async delete<T>(endpoint: string): Promise<T>;
 }
 ```
 
@@ -94,13 +94,13 @@ function useCourseAssignmentGroups(courseId: string | null) {
 
 #### **캐싱 효과:**
 
-| 항목 | Before | After | 개선 |
-|------|--------|-------|------|
-| **페이지 이동 시 API 호출** | 매번 호출 | 캐시 사용 | ✅ 불필요한 호출 제거 |
-| **중복 요청** | 모두 실행 | 1분 내 중복 무시 | ✅ 네트워크 트래픽 감소 |
-| **로딩 속도** | 느림 | 빠름 | ✅ 즉시 캐시 데이터 표시 |
-| **에러 처리** | 수동 재시도 | 자동 3회 재시도 | ✅ 안정성 향상 |
-| **데이터 동기화** | 수동 새로고침 | 자동 재검증 | ✅ 항상 최신 데이터 |
+| 항목                        | Before        | After            | 개선                     |
+| --------------------------- | ------------- | ---------------- | ------------------------ |
+| **페이지 이동 시 API 호출** | 매번 호출     | 캐시 사용        | ✅ 불필요한 호출 제거    |
+| **중복 요청**               | 모두 실행     | 1분 내 중복 무시 | ✅ 네트워크 트래픽 감소  |
+| **로딩 속도**               | 느림          | 빠름             | ✅ 즉시 캐시 데이터 표시 |
+| **에러 처리**               | 수동 재시도   | 자동 3회 재시도  | ✅ 안정성 향상           |
+| **데이터 동기화**           | 수동 새로고침 | 자동 재검증      | ✅ 항상 최신 데이터      |
 
 ---
 
@@ -136,6 +136,7 @@ package.json                  🔧 UPDATED - swr 의존성 추가
 ### **1. API Client 사용**
 
 #### **Before:**
+
 ```typescript
 const response = await fetch("/api/canvas/courses", {
   headers: {
@@ -152,6 +153,7 @@ const data = await response.json();
 ```
 
 #### **After:**
+
 ```typescript
 const data = await ApiClient.get<CoursesResponse>("/api/canvas/courses");
 // 에러 처리, 헤더 설정, JSON 파싱 모두 자동
@@ -160,6 +162,7 @@ const data = await ApiClient.get<CoursesResponse>("/api/canvas/courses");
 ### **2. SWR Hook 사용**
 
 #### **Before (Courses 페이지):**
+
 ```typescript
 const [courses, setCourses] = useState<Course[]>([]);
 const [loading, setLoading] = useState(true);
@@ -183,6 +186,7 @@ const fetchCourses = async () => {
 ```
 
 #### **After:**
+
 ```typescript
 const { courses, isLoading, isError, error, refresh } = useCanvasCourses();
 // 자동 캐싱, 자동 재검증, 에러 처리 포함
@@ -191,6 +195,7 @@ const { courses, isLoading, isError, error, refresh } = useCanvasCourses();
 ### **3. Course Dashboard 페이지**
 
 #### **Before:**
+
 ```typescript
 const [loading, setLoading] = useState(true);
 const [error, setError] = useState("");
@@ -205,8 +210,9 @@ const loadCourseData = async () => {
 ```
 
 #### **After:**
+
 ```typescript
-const { categories, courseName, isLoading, isError, error, refresh } = 
+const { categories, courseName, isLoading, isError, error, refresh } =
   useCourseAssignments(courseId);
 
 // 데이터 처리만 useEffect로
@@ -262,6 +268,7 @@ useEffect(() => {
 ```
 
 **결과:**
+
 - ⚡ **페이지 이동 속도 90% 향상**
 - 📉 **불필요한 API 호출 80% 감소**
 - 💰 **Canvas API Rate Limit 절약**
@@ -285,7 +292,9 @@ if (response.status === 401) {
 if (response.status === 429) {
   const retryAfter = response.headers.get("Retry-After");
   throw new ApiError(
-    `Rate limit exceeded. Please try again ${retryAfter ? `after ${retryAfter} seconds` : "later"}.`,
+    `Rate limit exceeded. Please try again ${
+      retryAfter ? `after ${retryAfter} seconds` : "later"
+    }.`,
     429
   );
 }
@@ -299,34 +308,42 @@ if (response.status >= 500) {
 ### **UI 개선:**
 
 #### **Before:**
+
 ```tsx
-{error && <p>Error: {error}</p>}
+{
+  error && <p>Error: {error}</p>;
+}
 ```
 
 #### **After:**
+
 ```tsx
-{isError ? (
-  <div>
-    <p>Error loading courses</p>
-    <p>{error instanceof ApiError ? error.message : "Failed to load courses"}</p>
-    <button onClick={() => refresh()}>Retry</button>
-    <button onClick={() => router.push("/")}>Back to Login</button>
-  </div>
-) : null}
+{
+  isError ? (
+    <div>
+      <p>Error loading courses</p>
+      <p>
+        {error instanceof ApiError ? error.message : "Failed to load courses"}
+      </p>
+      <button onClick={() => refresh()}>Retry</button>
+      <button onClick={() => router.push("/")}>Back to Login</button>
+    </div>
+  ) : null;
+}
 ```
 
 ---
 
 ## 📊 코드 품질 지표
 
-| 항목 | Before | After | 개선 |
-|------|--------|-------|------|
-| **courses/page.tsx** | 267줄 | 234줄 | **-12%** |
-| **[courseId]/page.tsx** | 320줄 | 260줄 | **-19%** |
-| **API 호출 코드 중복** | 많음 | 없음 | **-100%** |
-| **에러 처리 일관성** | 부분적 | 완전 | **100%** |
-| **캐싱** | 없음 | 있음 | **+100%** |
-| **자동 재시도** | 없음 | 있음 | **+100%** |
+| 항목                    | Before | After | 개선      |
+| ----------------------- | ------ | ----- | --------- |
+| **courses/page.tsx**    | 267줄  | 234줄 | **-12%**  |
+| **[courseId]/page.tsx** | 320줄  | 260줄 | **-19%**  |
+| **API 호출 코드 중복**  | 많음   | 없음  | **-100%** |
+| **에러 처리 일관성**    | 부분적 | 완전  | **100%**  |
+| **캐싱**                | 없음   | 있음  | **+100%** |
+| **자동 재시도**         | 없음   | 있음  | **+100%** |
 
 ---
 
@@ -370,6 +387,7 @@ if (response.status >= 500) {
 ### **구현된 기능:**
 
 1. ✅ **API Client 통합**
+
    - 중앙집중식 API 호출 관리
    - 일관된 에러 처리
    - 자동 인증 헤더

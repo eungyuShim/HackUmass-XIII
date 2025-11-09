@@ -34,9 +34,16 @@ export default function CourseDashboardPage() {
   const isFirstVisit = useFirstVisit();
   const setCategories = useCategoryStore((state) => state.setCategories);
   const { isAuthenticated } = useAuthStore();
-  
+
   // Use SWR for data fetching
-  const { categories, courseName: apiCourseName, isLoading, isError, error, refresh } = useCourseAssignments(courseId);
+  const {
+    categories,
+    courseName: apiCourseName,
+    isLoading,
+    isError,
+    error,
+    refresh,
+  } = useCourseAssignments(courseId);
 
   // Prevent hydration mismatch
   useEffect(() => {
@@ -85,7 +92,11 @@ export default function CourseDashboardPage() {
           weight: cat.weight || 0,
           items:
             cat.assignments?.map((assignment: any) => {
-              console.log("Processing assignment:", assignment.name, assignment); // Debug log
+              console.log(
+                "Processing assignment:",
+                assignment.name,
+                assignment
+              ); // Debug log
 
               // Convert score to percentage (score/maxScore * 100) with 1 decimal place
               let scorePercentage = null;
@@ -131,9 +142,10 @@ export default function CourseDashboardPage() {
   useEffect(() => {
     if (isError && error) {
       console.error("Failed to fetch course data:", error);
-      const errorMessage = error instanceof ApiError 
-        ? error.message 
-        : "Failed to load course data";
+      const errorMessage =
+        error instanceof ApiError
+          ? error.message
+          : "Failed to load course data";
       setToast({ message: errorMessage, type: "error" });
     }
   }, [isError, error]);
@@ -265,13 +277,19 @@ export default function CourseDashboardPage() {
               Error loading course
             </p>
             <p style={{ fontSize: "14px" }}>
-              {error instanceof ApiError ? error.message : "Failed to load course data"}
+              {error instanceof ApiError
+                ? error.message
+                : "Failed to load course data"}
             </p>
-            <div style={{ display: "flex", gap: "12px", justifyContent: "center", marginTop: "16px" }}>
-              <button
-                className="btn btn--primary"
-                onClick={handleRefreshData}
-              >
+            <div
+              style={{
+                display: "flex",
+                gap: "12px",
+                justifyContent: "center",
+                marginTop: "16px",
+              }}
+            >
+              <button className="btn btn--primary" onClick={handleRefreshData}>
                 Retry
               </button>
               <button

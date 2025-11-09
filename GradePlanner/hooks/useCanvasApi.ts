@@ -26,7 +26,7 @@ interface AssignmentGroupsResponse {
 }
 
 // SWR fetcher using ApiClient
-const fetcher = <T,>(url: string): Promise<T> => ApiClient.get<T>(url);
+const fetcher = <T>(url: string): Promise<T> => ApiClient.get<T>(url);
 
 /**
  * Hook to fetch courses with SWR caching
@@ -106,7 +106,8 @@ export function useCourseAssignmentGroups(courseId: string | null) {
   );
 
   return {
-    assignmentGroups: (data as AssignmentGroupsResponse | undefined)?.assignmentGroups || [],
+    assignmentGroups:
+      (data as AssignmentGroupsResponse | undefined)?.assignmentGroups || [],
     isLoading,
     isError: error,
     error,
