@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useCategoryStore } from "@/app/stores/useCategoryStore";
+import { useAuthStore } from "@/app/stores/useAuthStore";
 import { useFirstVisit } from "@/hooks/useAppInit";
 import CategoryList from "@/components/dashboard/CategoryList";
 import ProgressBar from "@/components/dashboard/ProgressBar";
@@ -14,138 +15,139 @@ import "@/components/shared/global.css";
 import "@/components/dashboard/dashboard.css";
 import "@/components/setup/setup.css";
 
-export default function DashboardPage() {
+export default function CourseDashboardPage() {
+  const params = useParams();
+  const router = useRouter();
+  const courseId = params.courseId as string;
+
   const [isSetupModalOpen, setIsSetupModalOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [courseName, setCourseName] = useState("");
-  const [courseId, setCourseId] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [toast, setToast] = useState<{
     message: string;
     type: "success" | "error" | "info" | "warning";
   } | null>(null);
+
   const isFirstVisit = useFirstVisit();
-  const router = useRouter();
   const setCategories = useCategoryStore((state) => state.setCategories);
+  const { isAuthenticated, getAuthHeaders } = useAuthStore();
 
   // Load course info and assignments from Canvas
   useEffect(() => {
-    const loadCourseData = async () => {
-      if (typeof window === "undefined") return;
+    // Check authentication
+    if (!isAuthenticated()) {
+      router.push("/");
+      return;
+    }
 
-      const currentCourseId = sessionStorage.getItem("current_course_id");
-      const currentCourseName = sessionStorage.getItem("current_course_name");
-      const token = sessionStorage.getItem("canvas_token");
-      const baseUrl = sessionStorage.getItem("canvas_base_url");
+    // Validate courseId
+    if (!courseId) {
+      setToast({ message: "Invalid course ID", type: "error" });
+      router.push("/courses");
+      return;
+    }
 
-      if (!currentCourseId || !currentCourseName) {
-        router.push("/courses");
-        return;
-      }
+    loadCourseData();
+  }, [courseId, isAuthenticated, router]);
 
-      if (!token || !baseUrl) {
-        router.push("/");
-        return;
-      }
-
-      setCourseId(currentCourseId);
-      setCourseName(currentCourseName);
+  const loadCourseData = async () => {
+    try {
       setLoading(true);
       setError("");
 
-      try {
-        // Fetch assignment groups and assignments from Canvas
-        const response = await fetch(
-          `/api/canvas/assignments/${currentCourseId}`,
-          {
-            headers: {
-              "x-canvas-token": token,
-              "x-canvas-base-url": baseUrl,
-            },
+      const headers = getAuthHeaders();
+
+      // Fetch assignment groups and assignments from Canvas
+      const response = await fetch(`/api/canvas/assignments/${courseId}`, {
+        headers,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to fetch assignments");
+      }
+
+      console.log("Canvas API Response:", data); // Debug log
+
+      // Set course name (from sessionStorage or API)
+      const savedCourseName = sessionStorage.getItem(`course_name_${courseId}`);
+      if (savedCourseName) {
+        setCourseName(savedCourseName);
+      } else if (data.courseName) {
+        setCourseName(data.courseName);
+        sessionStorage.setItem(`course_name_${courseId}`, data.courseName);
+      }
+
+      // Convert Canvas categories to app format
+      if (data.categories && data.categories.length > 0) {
+        const formattedCategories = data.categories.map(
+          (cat: any, index: number) => {
+            console.log("Processing category:", cat); // Debug log
+
+            return {
+              id: index + 1, // Use simple incremental ID
+              name: cat.name,
+              weight: cat.weight || 0,
+              items:
+                cat.assignments?.map((assignment: any) => {
+                  console.log(
+                    "Processing assignment:",
+                    assignment.name,
+                    assignment
+                  ); // Debug log
+
+                  // Convert score to percentage (score/maxScore * 100) with 1 decimal place
+                  let scorePercentage = null;
+                  if (assignment.graded && assignment.points > 0) {
+                    scorePercentage = parseFloat(
+                      ((assignment.earned / assignment.points) * 100).toFixed(1)
+                    );
+                  }
+
+                  return {
+                    name: assignment.name,
+                    score: scorePercentage,
+                    maxScore: assignment.points || 0,
+                    dueDate: assignment.dueDate,
+                    submitted: assignment.submitted || false,
+                    graded: assignment.graded || false,
+                    late: assignment.late || false,
+                    missing: assignment.missing || false,
+                  };
+                }) || [],
+              editingName: false,
+              editingWeight: false,
+              showItems: true,
+            };
           }
         );
 
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || "Failed to fetch assignments");
-        }
-
-        console.log("Canvas API Response:", data); // Debug log
-
-        // Convert Canvas categories to app format
-        if (data.categories && data.categories.length > 0) {
-          const formattedCategories = data.categories.map(
-            (cat: any, index: number) => {
-              console.log("Processing category:", cat); // Debug log
-
-              return {
-                id: index + 1, // Use simple incremental ID
-                name: cat.name,
-                weight: cat.weight || 0,
-                items:
-                  cat.assignments?.map((assignment: any) => {
-                    console.log(
-                      "Processing assignment:",
-                      assignment.name,
-                      assignment
-                    ); // Debug log
-
-                    // Convert score to percentage (score/maxScore * 100) with 1 decimal place
-                    let scorePercentage = null;
-                    if (assignment.graded && assignment.points > 0) {
-                      scorePercentage = parseFloat(
-                        ((assignment.earned / assignment.points) * 100).toFixed(
-                          1
-                        )
-                      );
-                    }
-
-                    return {
-                      name: assignment.name,
-                      score: scorePercentage,
-                      maxScore: assignment.points || 0,
-                      dueDate: assignment.dueDate,
-                      submitted: assignment.submitted || false,
-                      graded: assignment.graded || false,
-                      late: assignment.late || false,
-                      missing: assignment.missing || false,
-                    };
-                  }) || [],
-                editingName: false,
-                editingWeight: false,
-                showItems: true,
-              };
-            }
-          );
-
-          console.log("Formatted categories:", formattedCategories); // Debug log
-          setCategories(formattedCategories);
-          setToast({
-            message: "Course data loaded successfully!",
-            type: "success",
-          });
-        } else {
-          console.log("No categories found in response");
-          setToast({
-            message: "No assignment categories found for this course",
-            type: "warning",
-          });
-        }
-      } catch (err) {
-        console.error("Failed to fetch course data:", err);
-        const errorMessage =
-          err instanceof Error ? err.message : "Failed to load course data";
-        setError(errorMessage);
-        setToast({ message: errorMessage, type: "error" });
-      } finally {
-        setLoading(false);
+        console.log("Formatted categories:", formattedCategories); // Debug log
+        setCategories(formattedCategories);
+        setToast({
+          message: "Course data loaded successfully!",
+          type: "success",
+        });
+      } else {
+        console.log("No categories found in response");
+        setToast({
+          message: "No assignment categories found for this course",
+          type: "warning",
+        });
       }
-    };
-
-    loadCourseData();
-  }, [router, setCategories]);
+    } catch (err) {
+      console.error("Failed to fetch course data:", err);
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to load course data";
+      setError(errorMessage);
+      setToast({ message: errorMessage, type: "error" });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Open setup modal on first visit
   useEffect(() => {
@@ -153,6 +155,14 @@ export default function DashboardPage() {
       setIsSetupModalOpen(true);
     }
   }, [isFirstVisit, loading]);
+
+  const handleBackToCourses = () => {
+    router.push("/courses");
+  };
+
+  const handleRefreshData = () => {
+    loadCourseData();
+  };
 
   return (
     <div className="layout">
@@ -176,9 +186,12 @@ export default function DashboardPage() {
         <nav>
           <ul className="nav-list">
             <li className="nav-item">
-              <a href="/courses" className="nav-link">
-                Back to Courses
-              </a>
+              <button
+                onClick={handleBackToCourses}
+                className="nav-link nav-link-button"
+              >
+                ← Back to Courses
+              </button>
             </li>
           </ul>
 
@@ -201,7 +214,7 @@ export default function DashboardPage() {
             <ul className="nav-list">
               <li className="nav-item">
                 <button
-                  onClick={() => window.location.reload()}
+                  onClick={handleRefreshData}
                   className="nav-link nav-link-button"
                 >
                   Refresh Data
@@ -266,7 +279,7 @@ export default function DashboardPage() {
             <button
               className="btn btn--outline"
               style={{ marginTop: "16px" }}
-              onClick={() => router.push("/courses")}
+              onClick={handleBackToCourses}
             >
               Back to Courses
             </button>

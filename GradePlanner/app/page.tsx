@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Toast from "@/components/shared/Toast";
 import { validateToken } from "@/lib/validation";
+import { useAuthStore } from "@/app/stores/useAuthStore";
 import "@/components/shared/global.css";
 import "@/components/auth/index.css";
 
@@ -21,6 +22,14 @@ export default function HomePage() {
     type: "success" | "error" | "info" | "warning";
   } | null>(null);
   const router = useRouter();
+  const { setAuth, isAuthenticated } = useAuthStore();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated()) {
+      router.push("/courses");
+    }
+  }, [isAuthenticated, router]);
 
   const handleSubmit = async () => {
     const value = token.trim();
@@ -65,12 +74,21 @@ export default function HomePage() {
       }
 
       if (data.valid) {
-        // Store credentials in sessionStorage
+        // Store credentials in Zustand (persisted to localStorage)
+        setAuth(
+          value,
+          CANVAS_BASE_URL,
+          data.user.name,
+          data.user.id?.toString()
+        );
+        
+        // Also keep in sessionStorage for backward compatibility (temporary)
         if (typeof window !== "undefined") {
           sessionStorage.setItem("canvas_token", value);
           sessionStorage.setItem("canvas_base_url", CANVAS_BASE_URL);
           sessionStorage.setItem("canvas_user", JSON.stringify(data.user));
         }
+        
         setToast({ message: `Welcome, ${data.user.name}!`, type: "success" });
         setTimeout(() => {
           router.push("/courses");

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { CourseCard } from "@/components/courses/CourseCard";
 import { CourseCardSkeleton } from "@/components/shared/Skeleton";
 import Toast from "@/components/shared/Toast";
+import { useAuthStore } from "@/app/stores/useAuthStore";
 import "@/components/shared/global.css";
 import "@/components/courses/course.css";
 
@@ -27,72 +28,71 @@ export default function CoursesPage() {
     type: "success" | "error" | "info" | "warning";
   } | null>(null);
   const router = useRouter();
+  const { isAuthenticated, getAuthHeaders, clearAuth } = useAuthStore();
 
   useEffect(() => {
-    const fetchCourses = async () => {
-      if (typeof window === "undefined") return;
-
-      const token = sessionStorage.getItem("canvas_token");
-      const baseUrl = sessionStorage.getItem("canvas_base_url");
-
-      if (!token || !baseUrl) {
-        setHasToken(false);
-        setLoading(false);
-        return;
-      }
-
-      setHasToken(true);
-      setLoading(true);
-      setError("");
-
-      try {
-        const response = await fetch("/api/canvas/courses", {
-          headers: {
-            "x-canvas-token": token,
-            "x-canvas-base-url": baseUrl,
-          },
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || "Failed to fetch courses");
-        }
-
-        setCourses(data.courses || []);
-        if (data.courses && data.courses.length > 0) {
-          setToast({
-            message: `Loaded ${data.courses.length} course(s)`,
-            type: "success",
-          });
-        }
-      } catch (err) {
-        console.error("Failed to fetch courses:", err);
-        const errorMessage =
-          err instanceof Error ? err.message : "Failed to load courses";
-        setError(errorMessage);
-        setToast({ message: errorMessage, type: "error" });
-      } finally {
-        setLoading(false);
-      }
-    };
+    // Check authentication
+    if (!isAuthenticated()) {
+      router.push("/");
+      return;
+    }
 
     fetchCourses();
   }, []);
 
-  const handleLogout = () => {
-    if (typeof window !== "undefined") {
-      sessionStorage.clear();
-      router.push("/");
+  const fetchCourses = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const headers = getAuthHeaders();
+
+      const response = await fetch("/api/canvas/courses", {
+        headers,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to fetch courses");
+      }
+
+      setCourses(data.courses || []);
+      setHasToken(true);
+
+      if (data.courses && data.courses.length > 0) {
+        setToast({
+          message: `Loaded ${data.courses.length} course(s)`,
+          type: "success",
+        });
+      }
+    } catch (err) {
+      console.error("Failed to fetch courses:", err);
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to load courses";
+      setError(errorMessage);
+      setToast({ message: errorMessage, type: "error" });
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleViewCourse = (course: Course) => {
+  const handleLogout = () => {
+    clearAuth();
     if (typeof window !== "undefined") {
-      sessionStorage.setItem("current_course_id", course.id);
-      sessionStorage.setItem("current_course_name", course.name);
-      router.push("/dashboard");
+      sessionStorage.clear();
     }
+    router.push("/");
+  };
+
+  const handleViewCourse = (course: Course) => {
+    // Save course name for display in dashboard
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem(`course_name_${course.id}`, course.name);
+    }
+
+    // Navigate to dynamic route
+    router.push(`/courses/${course.id}`);
   };
 
   return (
