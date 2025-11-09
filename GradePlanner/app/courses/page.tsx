@@ -21,6 +21,7 @@ interface Course {
 
 export default function CoursesPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [toast, setToast] = useState<{
     message: string;
     type: "success" | "error" | "info" | "warning";
@@ -31,13 +32,18 @@ export default function CoursesPage() {
   // Use SWR for data fetching
   const { courses, isLoading, isError, error, refresh } = useCanvasCourses();
 
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   useEffect(() => {
     // Check authentication
-    if (!isAuthenticated()) {
+    if (mounted && !isAuthenticated()) {
       router.push("/");
       return;
     }
-  }, [isAuthenticated, router]);
+  }, [mounted, isAuthenticated, router]);
 
   useEffect(() => {
     // Show success toast when courses are loaded
@@ -155,13 +161,13 @@ export default function CoursesPage() {
             </div>
           </div>
           <div className="pill" id="tok">
-            {isAuthenticated() ? "✓ Token detected" : "Demo mode (no token)"}
+            {mounted && isAuthenticated() ? "✓ Token detected" : "Demo mode (no token)"}
           </div>
         </header>
 
         <div className="grid-wrapper">
           <section className="grid" id="list">
-            {isLoading ? (
+            {!mounted || isLoading ? (
               <>
                 <CourseCardSkeleton />
                 <CourseCardSkeleton />
@@ -213,11 +219,11 @@ export default function CoursesPage() {
                   No courses found
                 </p>
                 <p style={{ fontSize: "14px" }}>
-                  {isAuthenticated()
+                  {mounted && isAuthenticated()
                     ? "No active courses are available for this account."
                     : "Please enter your Canvas access token to view your courses."}
                 </p>
-                {!isAuthenticated() && (
+                {mounted && !isAuthenticated() && (
                   <button
                     className="btn btn--primary"
                     style={{ marginTop: "16px" }}

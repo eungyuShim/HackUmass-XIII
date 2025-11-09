@@ -25,6 +25,7 @@ export default function CourseDashboardPage() {
   const [isSetupModalOpen, setIsSetupModalOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [courseName, setCourseName] = useState("");
+  const [mounted, setMounted] = useState(false);
   const [toast, setToast] = useState<{
     message: string;
     type: "success" | "error" | "info" | "warning";
@@ -36,6 +37,11 @@ export default function CourseDashboardPage() {
   
   // Use SWR for data fetching
   const { categories, courseName: apiCourseName, isLoading, isError, error, refresh } = useCourseAssignments(courseId);
+
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Check authentication
   useEffect(() => {
@@ -241,7 +247,7 @@ export default function CourseDashboardPage() {
           </div>
         </header>
 
-        {isLoading ? (
+        {!mounted || isLoading ? (
           <div style={{ padding: "2rem" }}>
             <CategorySkeleton />
             <CategorySkeleton />

@@ -17,6 +17,7 @@ export default function HomePage() {
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [mounted, setMounted] = useState(false);
   const [toast, setToast] = useState<{
     message: string;
     type: "success" | "error" | "info" | "warning";
@@ -24,12 +25,17 @@ export default function HomePage() {
   const router = useRouter();
   const { setAuth, isAuthenticated } = useAuthStore();
 
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // Redirect if already authenticated
   useEffect(() => {
-    if (isAuthenticated()) {
+    if (mounted && isAuthenticated()) {
       router.push("/courses");
     }
-  }, [isAuthenticated, router]);
+  }, [mounted, isAuthenticated, router]);
 
   const handleSubmit = async () => {
     const value = token.trim();
