@@ -20,7 +20,7 @@ export function mapCanvasCourse(canvasCourse: CanvasCourse) {
  */
 export function mapCanvasAssignment(assignment: CanvasAssignment) {
   // Attendance 감지: 이름에 "attendance"가 포함되는 경우
-  const isAttendance = assignment.name.toLowerCase().includes('attendance');
+  const isAttendance = assignment.name.toLowerCase().includes("attendance");
 
   return {
     id: assignment.id.toString(),
@@ -50,7 +50,7 @@ export function mapAssignmentGroup(
   courseId: string
 ) {
   // 카테고리 이름으로 attendance 감지
-  const isAttendanceCategory = group.name.toLowerCase().includes('attendance');
+  const isAttendanceCategory = group.name.toLowerCase().includes("attendance");
 
   return {
     id: `${courseId}-${group.id}`,
@@ -65,7 +65,8 @@ export function mapAssignmentGroup(
       group.assignments?.map((a) => ({
         ...mapCanvasAssignment(a),
         category: group.name,
-        isAttendance: isAttendanceCategory || a.name.toLowerCase().includes('attendance'),
+        isAttendance:
+          isAttendanceCategory || a.name.toLowerCase().includes("attendance"),
       })) || [],
   };
 }

@@ -156,14 +156,19 @@ export default function GradeStrategy() {
   };
 
   const hasUngradedItems = ungradedItems.length > 0;
-  
+
   // Check if target is achievable
-  const targetPercentage = { 'A': 93, 'A-': 90, 'B+': 87, 'B': 83, 'B-': 80, 'C+': 77, 'C': 73, 'C-': 70 }[currentTargetGrade] || 93;
+  const targetPercentage =
+    { A: 93, "A-": 90, "B+": 87, B: 83, "B-": 80, "C+": 77, C: 73, "C-": 70 }[
+      currentTargetGrade
+    ] || 93;
   const isTargetAchievable = maxPossibleGrade >= targetPercentage;
-  
+
   // Count attendance items
-  const attendanceItems = ungradedItems.filter(item => item.isAttendance);
-  const attendanceNeeded = attendanceItems.filter(item => item.assumedScore === 1).length;
+  const attendanceItems = ungradedItems.filter((item) => item.isAttendance);
+  const attendanceNeeded = attendanceItems.filter(
+    (item) => item.assumedScore === 1
+  ).length;
   const attendanceTotal = attendanceItems.length;
 
   return (
@@ -182,20 +187,29 @@ export default function GradeStrategy() {
                 marginBottom: "16px",
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "8px" }}
+              >
                 <span style={{ fontSize: "18px" }}>⚠️</span>
                 <div>
-                  <div style={{ fontWeight: 600, color: "#991b1b", marginBottom: "4px" }}>
+                  <div
+                    style={{
+                      fontWeight: 600,
+                      color: "#991b1b",
+                      marginBottom: "4px",
+                    }}
+                  >
                     Target Grade Not Achievable
                   </div>
                   <div style={{ fontSize: "13px", color: "#7f1d1d" }}>
-                    Maximum possible grade: {maxPossibleGrade.toFixed(1)}% (even with 100% on all remaining items)
+                    Maximum possible grade: {maxPossibleGrade.toFixed(1)}% (even
+                    with 100% on all remaining items)
                   </div>
                 </div>
               </div>
             </div>
           )}
-          
+
           {/* Attendance Info */}
           {attendanceItems.length > 0 && (
             <div
@@ -209,10 +223,11 @@ export default function GradeStrategy() {
                 color: "#1e40af",
               }}
             >
-              📅 Attendance Required: <strong>{attendanceNeeded}</strong> out of <strong>{attendanceTotal}</strong> sessions
+              📅 Attendance Required: <strong>{attendanceNeeded}</strong> out of{" "}
+              <strong>{attendanceTotal}</strong> sessions
             </div>
           )}
-          
+
           <div
             style={{
               display: "flex",
@@ -307,24 +322,30 @@ export default function GradeStrategy() {
               <div
                 key={`${item.categoryId}-${item.itemName}`}
                 className="ungraded-item-slider"
-                style={item.isAttendance ? {
-                  border: '2px solid #3b82f6',
-                  backgroundColor: '#eff6ff'
-                } : undefined}
+                style={
+                  item.isAttendance
+                    ? {
+                        border: "2px solid #3b82f6",
+                        backgroundColor: "#eff6ff",
+                      }
+                    : undefined
+                }
               >
                 <div className="slider-header">
                   <div className="slider-item-info">
                     <div className="slider-item-text">
                       <div className="slider-item-name">
-                        {item.isAttendance && '📅 '}
+                        {item.isAttendance && "📅 "}
                         {item.itemName}
                         {item.assumedScore === 0 && item.isAttendance && (
-                          <span style={{ 
-                            marginLeft: '8px', 
-                            fontSize: '12px', 
-                            color: '#dc2626',
-                            fontWeight: 600 
-                          }}>
+                          <span
+                            style={{
+                              marginLeft: "8px",
+                              fontSize: "12px",
+                              color: "#dc2626",
+                              fontWeight: 600,
+                            }}
+                          >
                             (Absent)
                           </span>
                         )}
@@ -332,7 +353,13 @@ export default function GradeStrategy() {
                       <div className="slider-item-category">
                         {item.categoryName}
                         {item.isAttendance && (
-                          <span style={{ marginLeft: '8px', fontSize: '11px', color: '#3b82f6' }}>
+                          <span
+                            style={{
+                              marginLeft: "8px",
+                              fontSize: "11px",
+                              color: "#3b82f6",
+                            }}
+                          >
                             • Attendance (0 or 100 only)
                           </span>
                         )}
@@ -356,20 +383,29 @@ export default function GradeStrategy() {
                   <input
                     type="text"
                     className="slider-value-input"
-                    value={item.isAttendance 
-                      ? (item.assumedScore === 1 ? '100' : '0')
-                      : (inputValues[index] ?? item.assumedScore.toFixed(1))
+                    value={
+                      item.isAttendance
+                        ? item.assumedScore === 1
+                          ? "100"
+                          : "0"
+                        : inputValues[index] ?? item.assumedScore.toFixed(1)
                     }
                     onChange={(e) => handleInputChange(index, e.target.value)}
                     onBlur={() => handleInputBlur(index)}
                     onKeyDown={(e) => handleInputKeyDown(index, e)}
                     disabled={item.isPinned}
                     readOnly={item.isAttendance}
-                    style={item.isAttendance ? {
-                      backgroundColor: item.assumedScore === 1 ? '#dcfce7' : '#fee2e2',
-                      color: item.assumedScore === 1 ? '#166534' : '#991b1b',
-                      fontWeight: 600
-                    } : undefined}
+                    style={
+                      item.isAttendance
+                        ? {
+                            backgroundColor:
+                              item.assumedScore === 1 ? "#dcfce7" : "#fee2e2",
+                            color:
+                              item.assumedScore === 1 ? "#166534" : "#991b1b",
+                            fontWeight: 600,
+                          }
+                        : undefined
+                    }
                   />
                 </div>
                 <input
@@ -378,12 +414,22 @@ export default function GradeStrategy() {
                   min="0"
                   max="100"
                   step={item.isAttendance ? "100" : "0.1"}
-                  value={item.isAttendance ? (item.assumedScore === 1 ? 100 : 0) : item.assumedScore}
+                  value={
+                    item.isAttendance
+                      ? item.assumedScore === 1
+                        ? 100
+                        : 0
+                      : item.assumedScore
+                  }
                   onChange={(e) =>
                     handleSliderChange(index, parseFloat(e.target.value))
                   }
                   disabled={item.isPinned || item.isAttendance}
-                  style={item.isAttendance ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
+                  style={
+                    item.isAttendance
+                      ? { opacity: 0.5, cursor: "not-allowed" }
+                      : undefined
+                  }
                 />
               </div>
             ))}

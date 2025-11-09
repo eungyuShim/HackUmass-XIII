@@ -39,21 +39,28 @@ export interface UngradedItem {
   isAttendance?: boolean; // 출석 항목 여부
 }
 
-export type TargetGrade = 'A' | 'A-' | 'B+' | 'B' | 'B-' | 'C+' | 'C' | 'C-';
+export type TargetGrade = "A" | "A-" | "B+" | "B" | "B-" | "C+" | "C" | "C-";
 
 export const GRADE_MAP: Record<TargetGrade, number> = {
-  'A': 93,
-  'A-': 90,
-  'B+': 87,
-  'B': 83,
-  'B-': 80,
-  'C+': 77,
-  'C': 73,
-  'C-': 70,
+  A: 93,
+  "A-": 90,
+  "B+": 87,
+  B: 83,
+  "B-": 80,
+  "C+": 77,
+  C: 73,
+  "C-": 70,
 };
 
 export const GRADE_OPTIONS: TargetGrade[] = [
-  'A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'C-'
+  "A",
+  "A-",
+  "B+",
+  "B",
+  "B-",
+  "C+",
+  "C",
+  "C-",
 ];
 
 export const DEFAULT_CATEGORIES: Category[] = [];

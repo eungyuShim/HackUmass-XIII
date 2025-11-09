@@ -189,8 +189,16 @@ export interface AttendanceRoundingResult {
 }
 
 export function handleAttendanceRounding(
-  attendanceItems: Array<{ itemName: string; itemWeight: number; neededPct: number }>,
-  regularItems: Array<{ itemName: string; itemWeight: number; neededPct: number }>
+  attendanceItems: Array<{
+    itemName: string;
+    itemWeight: number;
+    neededPct: number;
+  }>,
+  regularItems: Array<{
+    itemName: string;
+    itemWeight: number;
+    neededPct: number;
+  }>
 ): AttendanceRoundingResult {
   // Attendance 총 필요량 계산
   const totalAttendanceNeeded = attendanceItems.reduce(
@@ -235,9 +243,13 @@ export interface RedistributeResult {
 }
 
 export function redistributeSurplus(
-  regularItems: Array<{ itemName: string; itemWeight: number; neededPct: number }>,
+  regularItems: Array<{
+    itemName: string;
+    itemWeight: number;
+    neededPct: number;
+  }>,
   surplus: number,
-  strategy: 'equal' | 'proportional'
+  strategy: "equal" | "proportional"
 ): RedistributeResult[] {
   if (surplus <= 0.0001 || regularItems.length === 0) {
     return regularItems.map((item) => ({
@@ -261,7 +273,7 @@ export function redistributeSurplus(
     }));
   }
 
-  if (strategy === 'equal') {
+  if (strategy === "equal") {
     // 균등 추가 감점
     let remaining = surplus;
     const updatedItems = [...validItems];
@@ -305,7 +317,10 @@ export function redistributeSurplus(
     }));
   } else {
     // 비례 추가 감점
-    const totalNeeded = validItems.reduce((sum, item) => sum + item.neededPct, 0);
+    const totalNeeded = validItems.reduce(
+      (sum, item) => sum + item.neededPct,
+      0
+    );
 
     return regularItems.map((item) => {
       if (item.neededPct <= 0) {

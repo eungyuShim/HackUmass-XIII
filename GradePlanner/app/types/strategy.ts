@@ -1,5 +1,5 @@
 // strategy.ts - Grade Strategy Types
-export type StrategyType = 'proportional' | 'equal' | 'custom';
+export type StrategyType = "proportional" | "equal" | "custom";
 
 export interface Strategy {
   id: StrategyType;
@@ -10,9 +10,10 @@ export interface Strategy {
 
 // Proportional Strategy - 비례 배분 전략 (Python Proportional Distribution 완전 구현)
 export const proportionalStrategy: Strategy = {
-  id: 'proportional',
-  name: 'Proportional Distribution',
-  description: 'Distribute deductions proportionally based on item weights (비례 배분)',
+  id: "proportional",
+  name: "Proportional Distribution",
+  description:
+    "Distribute deductions proportionally based on item weights (비례 배분)",
   calculate: (ungradedItems, totalDeductiblePoints) => {
     if (totalDeductiblePoints <= 0) {
       return ungradedItems.map((item) => ({
@@ -34,7 +35,10 @@ export const proportionalStrategy: Strategy = {
     const regularItems = updatedItems.filter((item) => !item.isAttendance);
     const allItems = [...regularItems, ...attendanceItems];
 
-    const totalWeight = allItems.reduce((sum, item) => sum + item.itemWeight, 0);
+    const totalWeight = allItems.reduce(
+      (sum, item) => sum + item.itemWeight,
+      0
+    );
 
     if (totalWeight <= 0) {
       return updatedItems;
@@ -42,7 +46,8 @@ export const proportionalStrategy: Strategy = {
 
     // Phase 1: 비례 배분 - 달성 비율 계산
     // achievement_ratio = (total_remaining - deduction_allowed) / total_remaining
-    const achievementRatio = (totalWeight - totalDeductiblePoints) / totalWeight;
+    const achievementRatio =
+      (totalWeight - totalDeductiblePoints) / totalWeight;
 
     const itemsWithNeeded = allItems.map((item) => ({
       item,
@@ -136,9 +141,9 @@ export const proportionalStrategy: Strategy = {
 
 // Equal Strategy - 균등 감점 + 희생 전략 (Python Equal Distribution 완전 구현)
 export const equalStrategy: Strategy = {
-  id: 'equal',
-  name: 'Equal Distribution',
-  description: 'Distribute deductions equally across all items (균등 감점)',
+  id: "equal",
+  name: "Equal Distribution",
+  description: "Distribute deductions equally across all items (균등 감점)",
   calculate: (ungradedItems, totalDeductiblePoints) => {
     if (totalDeductiblePoints <= 0 || ungradedItems.length === 0) {
       return ungradedItems.map((item) => ({
@@ -310,9 +315,9 @@ export const equalStrategy: Strategy = {
 
 // Custom Strategy - 사용자 정의 전략 (나중에 추가 가능)
 export const customStrategy: Strategy = {
-  id: 'custom',
-  name: 'Custom Strategy',
-  description: 'Define your own distribution logic',
+  id: "custom",
+  name: "Custom Strategy",
+  description: "Define your own distribution logic",
   calculate: (ungradedItems, totalDeductiblePoints) => {
     // 기본적으로 proportional과 동일하게 동작
     return proportionalStrategy.calculate(ungradedItems, totalDeductiblePoints);
@@ -328,5 +333,7 @@ export const AVAILABLE_STRATEGIES: Strategy[] = [
 
 // 전략 찾기 헬퍼 함수
 export const getStrategy = (type: StrategyType): Strategy => {
-  return AVAILABLE_STRATEGIES.find((s) => s.id === type) || proportionalStrategy;
+  return (
+    AVAILABLE_STRATEGIES.find((s) => s.id === type) || proportionalStrategy
+  );
 };
