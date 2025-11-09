@@ -5,17 +5,20 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useCategoryStore } from '@/app/stores/useCategoryStore';
 import { useProgressStore } from '@/app/stores/useProgressStore';
+import { AVAILABLE_STRATEGIES, StrategyType } from '@/app/types/strategy';
 
 export default function GradeStrategy() {
   const categories = useCategoryStore((state) => state.categories);
   const currentTargetGrade = useProgressStore((state) => state.currentTargetGrade);
   const ungradedItems = useProgressStore((state) => state.ungradedItems);
   const projectedGrade = useProgressStore((state) => state.projectedGrade);
+  const currentStrategy = useProgressStore((state) => state.currentStrategy);
   const collectUngradedItems = useProgressStore((state) => state.collectUngradedItems);
   const calculateTotalDeductiblePoints = useProgressStore((state) => state.calculateTotalDeductiblePoints);
   const updateSlider = useProgressStore((state) => state.updateSlider);
   const togglePin = useProgressStore((state) => state.togglePin);
   const calculateProjectedGrade = useProgressStore((state) => state.calculateProjectedGrade);
+  const setStrategy = useProgressStore((state) => state.setStrategy);
   
   // Local state for text input values
   const [inputValues, setInputValues] = useState<{ [key: number]: string }>({});
@@ -32,6 +35,13 @@ export default function GradeStrategy() {
   useEffect(() => {
     calculateTotalDeductiblePoints(categories);
   }, [currentTargetGrade, categories, calculateTotalDeductiblePoints]);
+  
+  // Recalculate when strategy changes
+  useEffect(() => {
+    if (categories.length > 0) {
+      calculateTotalDeductiblePoints(categories);
+    }
+  }, [currentStrategy]);
   
   // Update projected grade when sliders change
   useEffect(() => {
@@ -101,6 +111,10 @@ export default function GradeStrategy() {
     togglePin(index);
   };
   
+  const handleStrategyChange = (strategyType: StrategyType) => {
+    setStrategy(strategyType);
+  };
+  
   const hasUngradedItems = ungradedItems.length > 0;
   
   return (
@@ -131,6 +145,30 @@ export default function GradeStrategy() {
               >
                 {projectedGrade.toFixed(1)}%
               </div>
+            </div>
+          </div>
+          
+          {/* Strategy Selection */}
+          <div style={{ marginBottom: '20px' }}>
+            <div style={{ 
+              fontSize: '14px', 
+              color: 'var(--txt-muted)', 
+              marginBottom: '8px',
+              fontWeight: 500
+            }}>
+              Distribution Strategy:
+            </div>
+            <div className="strategy-options">
+              {AVAILABLE_STRATEGIES.map((strategy) => (
+                <button
+                  key={strategy.id}
+                  className={`strategy-btn ${currentStrategy === strategy.id ? 'active' : ''}`}
+                  onClick={() => handleStrategyChange(strategy.id)}
+                  title={strategy.description}
+                >
+                  {strategy.name}
+                </button>
+              ))}
             </div>
           </div>
           

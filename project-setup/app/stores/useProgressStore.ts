@@ -3,6 +3,7 @@
 
 import { create } from 'zustand';
 import { UngradedItem, TargetGrade, GRADE_MAP } from '@/app/types/dashboard';
+import { StrategyType, getStrategy } from '@/app/types/strategy';
 
 interface ProgressStore {
   currentTargetGrade: TargetGrade;
@@ -10,9 +11,11 @@ interface ProgressStore {
   totalDeductiblePoints: number;
   projectedGrade: number;
   maxPossibleGrade: number;
+  currentStrategy: StrategyType;
   
   // Actions
   setTargetGrade: (grade: TargetGrade) => void;
+  setStrategy: (strategy: StrategyType) => void;
   collectUngradedItems: (categories: any[]) => void;
   calculateTotalDeductiblePoints: (categories: any[]) => void;
   updateSlider: (index: number, score: number) => void;
@@ -28,9 +31,18 @@ export const useProgressStore = create<ProgressStore>()((set, get) => ({
   totalDeductiblePoints: 0,
   projectedGrade: 0,
   maxPossibleGrade: 0,
+  currentStrategy: 'proportional',
   
   setTargetGrade: (grade: TargetGrade) => {
     set({ currentTargetGrade: grade });
+  },
+  
+  setStrategy: (strategyType: StrategyType) => {
+    set({ currentStrategy: strategyType });
+    // Re-calculate with new strategy
+    const { collectUngradedItems } = get();
+    const categories = []; // Will be passed from component
+    // This will be triggered from component side
   },
   
   collectUngradedItems: (categories: any[]) => {
@@ -67,7 +79,7 @@ export const useProgressStore = create<ProgressStore>()((set, get) => ({
   },
   
   calculateTotalDeductiblePoints: (categories: any[]) => {
-    const { currentTargetGrade, ungradedItems } = get();
+    const { currentTargetGrade, ungradedItems, currentStrategy } = get();
     const targetGrade = GRADE_MAP[currentTargetGrade];
     
     // Calculate current grade from graded items
@@ -96,68 +108,11 @@ export const useProgressStore = create<ProgressStore>()((set, get) => ({
     const maxPossible = currentGrade + ungradedWeight;
     const totalDeductiblePoints = maxPossible - targetGrade;
     
-    if (totalDeductiblePoints <= 0) {
-      set({
-        totalDeductiblePoints: 0,
-        ungradedItems: ungradedItems.map((item) => ({
-          ...item,
-          maxDeduction: 0,
-          deductedPoints: 0,
-          assumedScore: 100,
-        })),
-      });
-      return;
-    }
+    // Use selected strategy to calculate initial distribution
+    const strategy = getStrategy(currentStrategy);
+    const calculatedItems = strategy.calculate(ungradedItems, totalDeductiblePoints);
     
-    // Set max deduction for each item
-    const updatedItems = ungradedItems.map((item) => ({
-      ...item,
-      maxDeduction: item.itemWeight,
-    }));
-    
-    const totalMaxDeduction = updatedItems.reduce((sum, item) => sum + item.maxDeduction, 0);
-    
-    if (totalMaxDeduction <= 0) {
-      set({ totalDeductiblePoints, ungradedItems: updatedItems });
-      return;
-    }
-    
-    // Distribute deductions proportionally
-    const itemsWithDeductions = updatedItems.map((item) => {
-      const share = item.itemWeight / totalMaxDeduction;
-      const targetDeduction = totalDeductiblePoints * share;
-      const deductedPoints = Math.min(targetDeduction, item.maxDeduction);
-      const scoreReduction = (deductedPoints * 100) / item.itemWeight;
-      const assumedScore = parseFloat(Math.max(0, Math.min(100, 100 - scoreReduction)).toFixed(1));
-      
-      return {
-        ...item,
-        deductedPoints,
-        assumedScore,
-      };
-    });
-    
-    // Scale if needed
-    const actualTotal = itemsWithDeductions.reduce((sum, item) => sum + item.deductedPoints, 0);
-    
-    if (actualTotal > totalDeductiblePoints + 0.01) {
-      const scale = totalDeductiblePoints / actualTotal;
-      const scaledItems = itemsWithDeductions.map((item) => {
-        const scaledDeduction = item.deductedPoints * scale;
-        const scoreReduction = (scaledDeduction * 100) / item.itemWeight;
-        const assumedScore = parseFloat(Math.max(0, Math.min(100, 100 - scoreReduction)).toFixed(1));
-        
-        return {
-          ...item,
-          deductedPoints: scaledDeduction,
-          assumedScore,
-        };
-      });
-      
-      set({ totalDeductiblePoints, ungradedItems: scaledItems });
-    } else {
-      set({ totalDeductiblePoints, ungradedItems: itemsWithDeductions });
-    }
+    set({ totalDeductiblePoints, ungradedItems: calculatedItems });
   },
   
   updateSlider: (index: number, newScore: number) => {
