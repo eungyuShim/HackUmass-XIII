@@ -142,7 +142,8 @@ Built with ❤️ at **HackUMass XIII 2025**
 - [Eungyu Shim](https://github.com/eungyuShim)
 - [Jongchan](https://github.com/xxjcpark)
 - [Jooyoung](https://github.com/youngh82)
-안
+  안
+
 ## 📞 Support
 
 - 🐛 [Report Bug](https://github.com/eungyuShim/HackUmass-XIII/issues)

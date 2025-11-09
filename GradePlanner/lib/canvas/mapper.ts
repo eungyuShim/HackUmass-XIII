@@ -23,18 +23,23 @@ export function mapCanvasAssignment(assignment: CanvasAssignment) {
   const isAttendance = assignment.name.toLowerCase().includes("attendance");
 
   // 🔍 DEBUG: Canvas API 원본 submission 데이터 로깅
-  const isQuizOrLab = assignment.name.toLowerCase().includes("quiz") || 
-                       assignment.name.toLowerCase().includes("lab");
-  
+  const isQuizOrLab =
+    assignment.name.toLowerCase().includes("quiz") ||
+    assignment.name.toLowerCase().includes("lab");
+
   if (isQuizOrLab) {
     console.log("\n" + "=".repeat(60));
     console.log(`📝 Assignment: ${assignment.name}`);
     console.log(`   Points Possible: ${assignment.points_possible}`);
-    console.log(`   Submission exists: ${assignment.submission ? 'YES' : 'NO'}`);
-    
+    console.log(
+      `   Submission exists: ${assignment.submission ? "YES" : "NO"}`
+    );
+
     if (assignment.submission) {
       console.log(`   Submission details:`);
-      console.log(`      workflow_state: ${assignment.submission.workflow_state}`);
+      console.log(
+        `      workflow_state: ${assignment.submission.workflow_state}`
+      );
       console.log(`      score: ${assignment.submission.score}`);
       console.log(`      submitted_at: ${assignment.submission.submitted_at}`);
       console.log(`      graded_at: ${assignment.submission.graded_at}`);
@@ -42,7 +47,9 @@ export function mapCanvasAssignment(assignment: CanvasAssignment) {
       console.log(`      late: ${assignment.submission.late}`);
       console.log(`      excused: ${assignment.submission.excused}`);
     } else {
-      console.log(`   ⚠️  NO SUBMISSION OBJECT - assignment.submission is null/undefined`);
+      console.log(
+        `   ⚠️  NO SUBMISSION OBJECT - assignment.submission is null/undefined`
+      );
     }
     console.log("=".repeat(60));
   }
@@ -52,22 +59,28 @@ export function mapCanvasAssignment(assignment: CanvasAssignment) {
   const hasSubmission =
     assignment.submission !== null &&
     assignment.submission !== undefined &&
-    typeof assignment.submission.score === 'number';
+    typeof assignment.submission.score === "number";
 
   // Only use score if the assignment has been submitted/graded
   // If not submitted, score should be null (not yet taken)
   let earned: number | null = null;
-  if (hasSubmission && assignment.submission && typeof assignment.submission.score === 'number') {
+  if (
+    hasSubmission &&
+    assignment.submission &&
+    typeof assignment.submission.score === "number"
+  ) {
     // Assignment is submitted or graded - use the score (even if 0)
     earned = assignment.submission.score;
   }
   // Otherwise leave as null (not submitted/graded yet)
-  
+
   // 🔍 DEBUG: earned 값 최종 결과
   if (isQuizOrLab) {
     console.log(`   ✅ hasSubmission: ${hasSubmission}`);
     console.log(`   ✅ Final earned value: ${earned}`);
-    console.log(`   ✅ Will be counted in grade: ${hasSubmission ? 'YES' : 'NO'}\n`);
+    console.log(
+      `   ✅ Will be counted in grade: ${hasSubmission ? "YES" : "NO"}\n`
+    );
   }
 
   return {

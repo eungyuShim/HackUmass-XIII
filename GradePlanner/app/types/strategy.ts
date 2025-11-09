@@ -12,8 +12,7 @@ export interface Strategy {
 export const proportionalStrategy: Strategy = {
   id: "proportional",
   name: "Equal Distribution",
-  description:
-    "Distribute deductions equally across all items (균등 감점)",
+  description: "Distribute deductions equally across all items (균등 감점)",
   calculate: (ungradedItems, totalDeductiblePoints) => {
     if (totalDeductiblePoints <= 0) {
       return ungradedItems.map((item) => ({
@@ -143,7 +142,8 @@ export const proportionalStrategy: Strategy = {
 export const equalStrategy: Strategy = {
   id: "equal",
   name: "Proportional Distribution",
-  description: "Distribute deductions proportionally based on item weights (비례 배분)",
+  description:
+    "Distribute deductions proportionally based on item weights (비례 배분)",
   calculate: (ungradedItems, totalDeductiblePoints) => {
     if (totalDeductiblePoints <= 0 || ungradedItems.length === 0) {
       return ungradedItems.map((item) => ({
